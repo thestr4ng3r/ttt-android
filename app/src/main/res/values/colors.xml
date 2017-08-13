@@ -5,4 +5,7 @@
     <color name="accent">#E37222</color>
 
     <color name="toolbar_foreground">@android:color/white</color>
+
+    <color name="text_secondary">#9000</color>
+    <color name="text_secondary2">#5000</color>
 </resources>

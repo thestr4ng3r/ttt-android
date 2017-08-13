@@ -2,4 +2,9 @@
     <string name="app_name">TTT Client</string>
 
     <string name="activity_main_title">TTT Feeds</string>
+
+    <string name="action_save_title">Save</string>
+
+    <string name="feed_title_hint">Feed Title</string>
+    <string name="feed_url_hint">URL</string>
 </resources>

@@ -6,5 +6,13 @@
         <item name="android:actionMenuTextColor">@color/toolbar_foreground</item>
     </style>
 
+    <style name="ToolbarEditText" parent="AppTheme">
+        <item name="colorControlNormal">@color/toolbar_foreground</item>
+        <item name="colorControlActivated">@color/toolbar_foreground</item>
+        <item name="colorControlHighlight">@color/toolbar_foreground</item>
+        <item name="android:textColorHint">#b3ffffff</item>
+        <item name="android:editTextColor">@color/toolbar_foreground</item>
+    </style>
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 </resources>

@@ -1,6 +1,7 @@
 package com.metallic.tttandroid
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
@@ -45,5 +46,10 @@ class MainActivity : AppCompatActivity()
 
 		recyclerViewAdapter = FeedsRecyclerViewAdapter(testFeeds)
 		recyclerView.adapter = recyclerViewAdapter
+
+		fab.setOnClickListener {
+			val intent = Intent(this, EditFeedActivity::class.java)
+			startActivity(intent)
+		}
 	}
 }
