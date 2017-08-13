@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">tttandroid</string>
+    <string name="app_name">TTT Client</string>
+
+    <string name="activity_main_title">TTT Feeds</string>
 </resources>
