@@ -23,7 +23,7 @@
             android:layout_marginEnd="16dp"
             android:theme="@style/ToolbarEditText">
             <android.support.design.widget.TextInputEditText
-                android:id="@+id/event_title_edit_text"
+                android:id="@+id/feed_name_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/feed_title_hint" />

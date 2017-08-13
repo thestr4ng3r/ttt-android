@@ -1,22 +1,38 @@
 package com.metallic.tttandroid.model
 
+import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 import android.os.Parcel
 import android.os.Parcelable
 
 @Entity
-class Feed(@PrimaryKey val id: Int?,
-		   val name: String,
-		   val url: String) //: Parcelable
+class Feed //: Parcelable
 {
-	/*constructor(name: String, url: String)
+	@PrimaryKey(autoGenerate = true)
+	@ColumnInfo(name = "id")
+	var id: Int = 0
+
+	@ColumnInfo(name = "name")
+	var name: String
+
+	@ColumnInfo(name = "url")
+	var url: String
+
+
+	constructor()
+	{
+		this.name = ""
+		this.url = ""
+	}
+
+	constructor(name: String, url: String)
 	{
 		this.name = name
 		this.url = url
 	}
 
-	constructor(id: Int, name: String, url: String)
+	/*constructor(id: Int, name: String, url: String)
 	{
 		this.id = id
 		this.name = name

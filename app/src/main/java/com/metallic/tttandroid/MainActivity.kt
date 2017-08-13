@@ -13,20 +13,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity()
 {
-	private val testFeeds = arrayOf(
-			Feed(42, "Feed 1", "url"),
-			Feed(42, "Feed 2", "url"),
-			Feed(42, "Feed 3", "url"),
-			Feed(42, "Feed 4", "url"),
-			Feed(42, "Feed 5", "url"),
-			Feed(42, "Feed 6", "url"),
-			Feed(42, "Feed 7", "url"),
-			Feed(42, "Feed 8", "url"),
-			Feed(42, "Feed 9", "url"),
-			Feed(42, "Feed 10", "url"),
-			Feed(42, "Feed 11", "url"),
-			Feed(42, "Feed 12", "url"))
-
 	private lateinit var recyclerView: RecyclerView
 	private lateinit var recyclerViewAdapter: FeedsRecyclerViewAdapter
 
@@ -44,7 +30,7 @@ class MainActivity : AppCompatActivity()
 		val dividerItemDecoration = DividerItemDecoration(this, layoutManager.orientation)
 		recyclerView.addItemDecoration(dividerItemDecoration)
 
-		recyclerViewAdapter = FeedsRecyclerViewAdapter(testFeeds)
+		recyclerViewAdapter = FeedsRecyclerViewAdapter(arrayOf())
 		recyclerView.adapter = recyclerViewAdapter
 
 		fab.setOnClickListener {
