@@ -14,8 +14,6 @@ import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.model.Feed
 import kotlinx.android.synthetic.main.activity_edit_feed.*
 import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 class EditFeedActivity: AppCompatActivity()
 {
@@ -60,17 +58,28 @@ class EditFeedActivity: AppCompatActivity()
 			override fun afterTextChanged(s: Editable)
 			{
 				feed.name = s.toString()
+				if(!feed.name.isEmpty())
+				{
+					feed_name_text_input_layout.error = null
+					feed_name_text_input_layout.isErrorEnabled = false
+				}
 			}
 		})
 
-		url_edit_text.setText(feed.url)
+		url_edit_text.setText(feed.feedUrl)
 		url_edit_text.addTextChangedListener(object : TextWatcher
 		{
 			override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 			override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
 			override fun afterTextChanged(s: Editable)
 			{
-				feed.url = s.toString()
+				feed.feedUrl = s.toString()
+				if(feed.fullUri != null)
+				{
+					url_text_input_layout.error = null
+					url_text_input_layout.isErrorEnabled = false
+				}
+				println(feed.fullUri)
 			}
 		})
 
@@ -113,6 +122,23 @@ class EditFeedActivity: AppCompatActivity()
 
 	private fun save()
 	{
+		var fail = false
+
+		if(feed.name.isEmpty())
+		{
+			feed_name_text_input_layout.error = getString(R.string.feed_name_edit_error)
+			fail = true
+		}
+
+		if(feed.fullUri == null)
+		{
+			url_text_input_layout.error = getString(R.string.feed_url_edit_error)
+			fail = true
+		}
+
+		if(fail)
+			return
+
 		val dao = AppDatabase.getInstance(this).feedDao()
 
 		if(newFeed)

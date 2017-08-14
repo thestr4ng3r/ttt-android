@@ -3,6 +3,7 @@ package com.metallic.tttandroid.model
 import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
+import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 import java.util.*
@@ -16,13 +17,41 @@ class Feed //: Parcelable
 
 	@ColumnInfo(name = "name")
 	var name: String = ""
+		set(value)
+		{
+			field = value.trim()
+		}
 
 	@ColumnInfo(name = "url")
-	var url: String = ""
+	var feedUrl: String = ""
+		set(value)
+		{
+			field = value.trim()
+		}
 
 	@ColumnInfo(name = "start_date")
 	var startDate: StartDate = StartDate(0, 0, 0)
 
+
+	val fullUri: Uri?
+		get()
+		{
+			val feedUrl = feedUrl
+
+			if(feedUrl.isEmpty())
+				return null
+
+			val startDateString = "%4d_%2d_%2d".format(startDate.year, startDate.month, startDate.day)
+
+			val feedUri = Uri.parse(feedUrl)
+
+			if(!feedUri.isAbsolute)
+				return null
+
+			return feedUri.buildUpon()
+				.appendQueryParameter("begindate", startDateString)
+				.build()
+		}
 
 
 	data class StartDate(val year: Int, val month: Int, val day: Int)

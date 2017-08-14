@@ -5,6 +5,8 @@
 
     <string name="action_save_title">Save</string>
 
-    <string name="feed_title_hint">Feed Title</string>
+    <string name="feed_name_hint">Feed Title</string>
+    <string name="feed_name_edit_error">Please enter a title.</string>
     <string name="feed_url_hint">URL</string>
+    <string name="feed_url_edit_error">Please enter a valid URL.</string>
 </resources>

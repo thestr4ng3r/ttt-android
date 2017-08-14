@@ -17,6 +17,7 @@
             app:layout_scrollFlags=""/>
 
         <android.support.design.widget.TextInputLayout
+            android:id="@+id/feed_name_text_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="72dp"
@@ -26,7 +27,7 @@
                 android:id="@+id/feed_name_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/feed_title_hint" />
+                android:hint="@string/feed_name_hint" />
         </android.support.design.widget.TextInputLayout>
 
     </android.support.design.widget.AppBarLayout>
@@ -47,7 +48,8 @@
             <LinearLayout
                 android:id="@+id/time_zone_row"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
+                android:minHeight="64dp"
                 android:orientation="horizontal"
                 android:background="?android:attr/selectableItemBackground">
 
@@ -56,22 +58,32 @@
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_public_black_24dp"
                     android:tint="@android:color/tertiary_text_light"
-                    android:layout_margin="16dp"/>
+                    android:layout_margin="16dp"
+                    android:layout_gravity="center_vertical"/>
 
-                <android.support.design.widget.TextInputEditText
-                    android:id="@+id/url_edit_text"
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/url_text_input_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:hint="@string/feed_url_hint"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:layout_marginEnd="8dp"
-                    android:inputType="textUri"/>
+                    android:gravity="center_vertical"
+                    android:padding="0dp"
+                    app:hintEnabled="false">
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/url_edit_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/feed_url_hint"
+                        android:inputType="textUri"/>
+                </android.support.design.widget.TextInputLayout>
 
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/start_date_zone_row"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="64dp"
                 android:orientation="horizontal"
                 android:background="?android:attr/selectableItemBackground">
 
@@ -80,7 +92,8 @@
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_event_black_24dp"
                     android:tint="@android:color/tertiary_text_light"
-                    android:layout_margin="16dp"/>
+                    android:layout_margin="16dp"
+                    android:layout_gravity="center_vertical"/>
 
                 <TextView
                     android:id="@+id/date_text_view"
