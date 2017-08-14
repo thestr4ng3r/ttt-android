@@ -1,8 +1,10 @@
 package com.metallic.tttandroid.adapter
 
+import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
+import com.metallic.tttandroid.FeedActivity
 import com.metallic.tttandroid.R
 import com.metallic.tttandroid.model.Feed
 import com.metallic.tttandroid.utils.inflate
@@ -28,6 +30,12 @@ class FeedsRecyclerViewAdapter: RecyclerView.Adapter<FeedsRecyclerViewAdapter.Vi
 		val item = items?.get(position) ?: return
 		holder.nameTextView.text = item.name
 		holder.startDateTextView.text = DATE_FORMAT_DATE.format(item.startDate.calendar.time)
+
+		holder.itemView.setOnClickListener {
+			val intent = Intent(holder.itemView.context, FeedActivity::class.java)
+			intent.putExtra(FeedActivity.FEED_ID_EXTRA, item.id)
+			holder.itemView.context.startActivity(intent)
+		}
 	}
 
 	inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView)

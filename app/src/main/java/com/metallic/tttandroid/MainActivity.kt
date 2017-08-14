@@ -1,18 +1,15 @@
 package com.metallic.tttandroid
 
-import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import com.metallic.tttandroid.adapter.FeedsRecyclerViewAdapter
-import com.metallic.tttandroid.model.Feed
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
-import com.metallic.tttandroid.viewmodel.FeedsViewModel
+import com.metallic.tttandroid.viewmodel.FeedListViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : LifecycleAppCompatActivity()
@@ -20,7 +17,7 @@ class MainActivity : LifecycleAppCompatActivity()
 	private lateinit var recyclerView: RecyclerView
 	private lateinit var recyclerViewAdapter: FeedsRecyclerViewAdapter
 
-	private lateinit var viewModel: FeedsViewModel
+	private lateinit var viewModel: FeedListViewModel
 
 	override fun onCreate(savedInstanceState: Bundle?)
 	{
@@ -44,7 +41,7 @@ class MainActivity : LifecycleAppCompatActivity()
 			startActivity(intent)
 		}
 
-		viewModel = ViewModelProviders.of(this)[FeedsViewModel::class.java]
+		viewModel = ViewModelProviders.of(this)[FeedListViewModel::class.java]
 		viewModel.feeds.observe(this, Observer { items -> recyclerViewAdapter.items = items })
 	}
 }
