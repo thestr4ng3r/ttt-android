@@ -5,6 +5,7 @@ import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 import android.os.Parcel
 import android.os.Parcelable
+import java.util.*
 
 @Entity
 class Feed //: Parcelable
@@ -14,23 +15,53 @@ class Feed //: Parcelable
 	var id: Int = 0
 
 	@ColumnInfo(name = "name")
-	var name: String
+	var name: String = ""
 
 	@ColumnInfo(name = "url")
-	var url: String
+	var url: String = ""
+
+	@ColumnInfo(name = "start_date")
+	var startDate: StartDate = StartDate(0, 0, 0)
 
 
-	constructor()
+
+	data class StartDate(val year: Int, val month: Int, val day: Int)
 	{
-		this.name = ""
-		this.url = ""
+		val calendar: GregorianCalendar get() = GregorianCalendar(year, month, day)
+
+		companion object
+		{
+			val currentDefault: StartDate get()
+			{
+				// from old TTT app:
+				// determine the current semester return its beginning
+				val c = Calendar.getInstance()
+				val currMonth = c.get(Calendar.MONTH)
+				val year: Int
+				val month: Int
+
+				// winter semester
+				if (currMonth >= Calendar.OCTOBER || currMonth < Calendar.APRIL)
+				{
+					month = Calendar.OCTOBER
+					if (currMonth >= Calendar.OCTOBER)
+						year = c.get(Calendar.YEAR)
+					else
+						year = c.get(Calendar.YEAR) - 1
+
+				}
+				else // summer semester
+				{
+					year = c.get(Calendar.YEAR)
+					month = Calendar.APRIL
+				}
+
+				return StartDate(year, month, 1)
+			}
+		}
 	}
 
-	constructor(name: String, url: String)
-	{
-		this.name = name
-		this.url = url
-	}
+
 
 	/*constructor(id: Int, name: String, url: String)
 	{
@@ -76,6 +107,7 @@ class Feed //: Parcelable
 
 		}
 	}*/
+
 
 }
 

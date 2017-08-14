@@ -7,9 +7,12 @@ import com.metallic.tttandroid.R
 import com.metallic.tttandroid.model.Feed
 import com.metallic.tttandroid.utils.inflate
 import kotlinx.android.synthetic.main.item_feed.view.*
+import java.text.DateFormat
 
 class FeedsRecyclerViewAdapter: RecyclerView.Adapter<FeedsRecyclerViewAdapter.ViewHolder>()
 {
+	private val DATE_FORMAT_DATE = DateFormat.getDateInstance()!!
+
 	var items: List<Feed>? = null
 		set(value)
 		{
@@ -24,10 +27,12 @@ class FeedsRecyclerViewAdapter: RecyclerView.Adapter<FeedsRecyclerViewAdapter.Vi
 	{
 		val item = items?.get(position) ?: return
 		holder.nameTextView.text = item.name
+		holder.startDateTextView.text = DATE_FORMAT_DATE.format(item.startDate.calendar.time)
 	}
 
 	inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView)
 	{
 		val nameTextView = itemView.name_text_view!!
+		val startDateTextView = itemView.start_date_text_view!!
 	}
 }

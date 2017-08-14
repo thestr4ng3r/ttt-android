@@ -1,14 +1,21 @@
 package com.metallic.tttandroid
 
+import android.app.DatePickerDialog
+import android.app.Dialog
+import android.app.DialogFragment
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.DatePicker
 import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.model.Feed
 import kotlinx.android.synthetic.main.activity_edit_feed.*
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 class EditFeedActivity: AppCompatActivity()
 {
@@ -17,7 +24,9 @@ class EditFeedActivity: AppCompatActivity()
 		val FEED_ID_EXTRA = "feed_id"
 	}
 
-	private lateinit var feed: Feed
+	private val DATE_FORMAT_DATE = DateFormat.getDateInstance()!!
+
+	lateinit var feed: Feed
 	private var newFeed = false
 
 	override fun onCreate(savedInstanceState: Bundle?)
@@ -39,6 +48,7 @@ class EditFeedActivity: AppCompatActivity()
 		else
 		{
 			feed = Feed()
+			feed.startDate = Feed.StartDate.currentDefault
 			newFeed = true
 		}
 
@@ -63,6 +73,17 @@ class EditFeedActivity: AppCompatActivity()
 				feed.url = s.toString()
 			}
 		})
+
+		date_text_view.setOnClickListener {
+			DatePickerDialogFragment().show(fragmentManager, "DatePicker")
+		}
+
+		updateStartDate()
+	}
+
+	fun updateStartDate()
+	{
+		date_text_view.text = DATE_FORMAT_DATE.format(feed.startDate.calendar.time)
 	}
 
 	override fun onCreateOptionsMenu(menu: Menu): Boolean
@@ -100,5 +121,24 @@ class EditFeedActivity: AppCompatActivity()
 			dao.update(feed)
 
 		finish()
+	}
+
+	class DatePickerDialogFragment: DialogFragment(), DatePickerDialog.OnDateSetListener
+	{
+		override fun onCreateDialog(savedInstanceState: Bundle?): Dialog
+		{
+			val activity = activity as EditFeedActivity
+			return DatePickerDialog(activity, this,
+					activity.feed.startDate.year,
+					activity.feed.startDate.month-1,
+					activity.feed.startDate.day)
+		}
+
+		override fun onDateSet(view: DatePicker, year: Int, month: Int, day: Int)
+		{
+			val activity = activity as EditFeedActivity
+			activity.feed.startDate = Feed.StartDate(year, month+1, day)
+			activity.updateStartDate()
+		}
 	}
 }
