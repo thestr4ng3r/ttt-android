@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import com.metallic.tttandroid.adapter.FeedsRecyclerViewAdapter
+import com.metallic.tttandroid.adapter.FeedListRecyclerViewAdapter
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
 import com.metallic.tttandroid.viewmodel.FeedListViewModel
 import kotlinx.android.synthetic.main.activity_main.*
@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : LifecycleAppCompatActivity()
 {
 	private lateinit var recyclerView: RecyclerView
-	private lateinit var recyclerViewAdapter: FeedsRecyclerViewAdapter
+	private lateinit var recyclerViewAdapter: FeedListRecyclerViewAdapter
 
 	private lateinit var viewModel: FeedListViewModel
 
@@ -33,7 +33,7 @@ class MainActivity : LifecycleAppCompatActivity()
 		val dividerItemDecoration = DividerItemDecoration(this, layoutManager.orientation)
 		recyclerView.addItemDecoration(dividerItemDecoration)
 
-		recyclerViewAdapter = FeedsRecyclerViewAdapter()
+		recyclerViewAdapter = FeedListRecyclerViewAdapter()
 		recyclerView.adapter = recyclerViewAdapter
 
 		fab.setOnClickListener {

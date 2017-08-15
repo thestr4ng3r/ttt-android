@@ -6,16 +6,17 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.model.Feed
+import com.metallic.tttandroid.request.FeedResponse
+import com.metallic.tttandroid.request.enqueueFeed
 import okhttp3.*
-import java.io.IOException
 
 class FeedViewModel(application: Application): AndroidViewModel(application)
 {
 	private var _feed: Feed? = null
 	val feed: Feed get() = _feed!!
 
-	private val _feedData = MutableLiveData<String>()
-	val feedData: LiveData<String> get() = _feedData
+	private val _feedData = MutableLiveData<FeedResponse>()
+	val feedData: LiveData<FeedResponse> get() = _feedData
 
 	private var call: Call? = null
 
@@ -26,25 +27,23 @@ class FeedViewModel(application: Application): AndroidViewModel(application)
 
 		_feed = AppDatabase.getInstance(getApplication()).feedDao().getById(feedId)
 
-		val url = _feed?.fullUri?.toString() ?: return
+		val url = _feed?.fullUri?.toString()
+
+		if(url == null)
+		{
+			_feedData.postValue(FeedResponse(null))
+			return
+		}
 
 		val request = Request.Builder()
 				.url(url)
 				.build()
 
 		call = OkHttpClient().newCall(request)
-		call?.enqueue(object: Callback
-		{
-			override fun onResponse(call: Call, response: Response)
-			{
-				_feedData.postValue(response.body()?.string() ?: "wtf")
-			}
-
-			override fun onFailure(call: Call, e: IOException)
-			{
-				_feedData.postValue("fail")
-			}
-		})
+		call?.enqueueFeed { response ->
+			call = null
+			_feedData.postValue(response)
+		}
 	}
 
 	override fun onCleared()

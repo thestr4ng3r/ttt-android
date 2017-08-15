@@ -4,11 +4,11 @@ import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 
-@Entity
+//@Entity
 class FeedItem
 {
-	@PrimaryKey(autoGenerate = true)
-	@ColumnInfo(name = "id")
+	//@PrimaryKey(autoGenerate = true)
+	//@ColumnInfo(name = "id")
 	var id: Int = 0
 
 	var title: String = ""
@@ -19,5 +19,5 @@ class FeedItem
 
 	var date: String = ""
 
-	var length: String = ""
+	var fileSize: Long = 0
 }

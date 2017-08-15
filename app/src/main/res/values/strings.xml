@@ -9,4 +9,13 @@
     <string name="feed_name_edit_error">Please enter a title.</string>
     <string name="feed_url_hint">URL</string>
     <string name="feed_url_edit_error">Please enter a valid URL.</string>
+
+    <string name="feed_loading_error">Error while loading the feed.</string>
+
+    <string name="action_edit_feed">Edit</string>
+    <string name="action_delete_feed">Delete</string>
+
+    <string name="dialog_delete_feed_message">Are you sure you want to delete the feed \"%s\"? All downloaded recordings will be deleted as well.</string>
+    <string name="dialog_delete_positive">Delete</string>
+    <string name="dialog_delete_negative">Cancel</string>
 </resources>
