@@ -6,6 +6,8 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.model.Feed
+import com.metallic.tttandroid.model.FeedItem
+import com.metallic.tttandroid.model.FeedItemWithDownload
 import com.metallic.tttandroid.request.FeedResponse
 import com.metallic.tttandroid.request.enqueueFeed
 import okhttp3.*
@@ -18,6 +20,8 @@ class FeedViewModel(application: Application): AndroidViewModel(application)
 	private val _feedData = MutableLiveData<FeedResponse>()
 	val feedData: LiveData<FeedResponse> get() = _feedData
 
+	lateinit var feedItems: LiveData<List<FeedItemWithDownload>>
+
 	private var call: Call? = null
 
 	fun initialize(feedId: Long) // TODO: is this really the correct way to init a ViewModel with a parameter?
@@ -25,7 +29,10 @@ class FeedViewModel(application: Application): AndroidViewModel(application)
 		if(_feed != null)
 			return
 
-		_feed = AppDatabase.getInstance(getApplication()).feedDao().getById(feedId)
+		val db = AppDatabase.getInstance(getApplication())
+
+		_feed = db.feedDao().getById(feedId)
+		feedItems = db.feedItemDao().getByFeedIdWithDownloads(feed.id)
 
 		val url = _feed?.fullUri?.toString()
 
@@ -43,6 +50,16 @@ class FeedViewModel(application: Application): AndroidViewModel(application)
 		call?.enqueueFeed { response ->
 			call = null
 			_feedData.postValue(response)
+
+			val items = response.items
+			if(items != null)
+			{
+				for(item in items)
+				{
+					item.feedId = _feed!!.id
+				}
+				db.feedItemDao().insert(items)
+			}
 		}
 	}
 

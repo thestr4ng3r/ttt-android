@@ -2,12 +2,15 @@ package com.metallic.tttandroid.model
 
 import android.arch.persistence.room.*
 import android.content.Context
+import java.util.*
 
-@Database(entities = arrayOf(Feed::class), version = 2)
+@Database(entities = arrayOf(Feed::class, FeedItem::class, FeedItemDownload::class), version = 4)
 @TypeConverters(AppDatabase.Converters::class)
 abstract class AppDatabase: RoomDatabase()
 {
 	abstract fun feedDao(): FeedDao
+	abstract fun feedItemDao(): FeedItemDao
+	abstract fun feedItemDownloadDao(): FeedItemDownloadDao
 
 	companion object
 	{
@@ -19,6 +22,7 @@ abstract class AppDatabase: RoomDatabase()
 			{
 				val newInstance = Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "app-database")
 						.allowMainThreadQueries()
+						.fallbackToDestructiveMigration() // TODO: remove this for app release
 						.build()
 				this.instance = newInstance
 				return newInstance
@@ -46,5 +50,12 @@ abstract class AppDatabase: RoomDatabase()
 					(value.month shl 5) +
 					(value.year shl 9)
 		}
+
+
+		@TypeConverter
+		fun dateFromTimestamp(value: Long) = Date(value)
+
+		@TypeConverter
+		fun timestampFromDate(value: Date) = value.time
 	}
 }

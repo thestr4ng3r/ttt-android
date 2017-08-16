@@ -7,6 +7,9 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import java.io.IOException
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.regex.Pattern
 
 data class FeedResponse(val items: List<FeedItem>?)
@@ -20,6 +23,9 @@ private val LINK = "link"
 private val TITLE = "title"
 private val ENCLOSURE = "enclosure"
 private val LENGTH = "length"
+private val PUBDATE = "pubDate"
+
+private val dateFormat = SimpleDateFormat("dd. MMM. yyyy", Locale.ENGLISH)
 
 fun Call.enqueueFeed(callback: (FeedResponse) -> Unit)
 {
@@ -33,7 +39,7 @@ fun Call.enqueueFeed(callback: (FeedResponse) -> Unit)
 				return
 			}
 
-			// from old ttt app
+			// partially from old ttt app
 			var feedItem: FeedItem? = null
 			val itemList = mutableListOf<FeedItem>()
 
@@ -49,18 +55,18 @@ fun Call.enqueueFeed(callback: (FeedResponse) -> Unit)
 
 			item.getChild(TITLE).setEndTextElementListener { body ->
 				feedItem?.title = body
-				val pattern = Pattern.compile(".*(\\d{4}_\\d{2}_\\d{2}).*")
-				val m = pattern.matcher(body)
-				if (m.matches())
-					feedItem?.date = m.group(1)
 			}
 
+			item.getChild(PUBDATE).setEndTextElementListener { body ->
+				feedItem?.date = try { dateFormat.parse(body) } catch (e: ParseException) { Date() }
+			}
 
 			item.getChild(LINK).setEndTextElementListener { body -> feedItem?.link = body }
 			item.getChild(DESCRIPTION).setEndTextElementListener { body -> feedItem?.description = body }
 
-			val enclosure = item.getChild(ENCLOSURE)
-			enclosure.setStartElementListener { attributes -> feedItem?.fileSize = attributes.getValue(LENGTH).toLongOrNull() ?: 0 }
+			item.getChild(ENCLOSURE).setStartElementListener { attributes ->
+				feedItem?.fileSize = attributes.getValue(LENGTH).toLongOrNull() ?: 0
+			}
 
 			Xml.parse(responseBody.byteStream(), Xml.Encoding.UTF_8, root.contentHandler)
 

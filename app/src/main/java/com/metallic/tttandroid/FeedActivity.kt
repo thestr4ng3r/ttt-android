@@ -1,10 +1,11 @@
 package com.metallic.tttandroid
 
 import android.app.AlertDialog
+import android.app.DownloadManager
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.widget.DividerItemDecoration
@@ -14,7 +15,11 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.metallic.tttandroid.adapter.FeedRecyclerViewAdapter
+import com.metallic.tttandroid.adapter.FeedRecyclerViewAdapter.OnItemClickListener
 import com.metallic.tttandroid.model.AppDatabase
+import com.metallic.tttandroid.model.FeedItem
+import com.metallic.tttandroid.model.FeedItemDownload
+import com.metallic.tttandroid.model.FeedItemWithDownload
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
 import com.metallic.tttandroid.viewmodel.FeedViewModel
 import kotlinx.android.synthetic.main.activity_feed.*
@@ -47,6 +52,7 @@ class FeedActivity: LifecycleAppCompatActivity()
 
 		recyclerViewAdapter = FeedRecyclerViewAdapter()
 		recyclerView.adapter = recyclerViewAdapter
+		recyclerViewAdapter.itemOnClickCallback = this::itemClicked
 
 		val feedId = intent.getLongExtra(FEED_ID_EXTRA, 0)
 
@@ -56,14 +62,37 @@ class FeedActivity: LifecycleAppCompatActivity()
 		title = viewModel.feed.name
 
 		progress_bar.show()
-		viewModel.feedData.observe(this, Observer { response ->
+		/*viewModel.feedData.observe(this, Observer { response ->
 			progress_bar.hide()
 			val items = response?.items
 			if(items == null)
 				error_text_view.visibility = View.VISIBLE
 			else
 				recyclerViewAdapter.items = items
+		})*/
+
+		viewModel.feedItems.observe(this, Observer { items ->
+			progress_bar.hide()
+			/*if(items == null)
+				error_text_view.visibility = View.VISIBLE
+			else*/
+			recyclerViewAdapter.items = items
 		})
+	}
+
+	private fun itemClicked(feedItem: FeedItemWithDownload)
+	{
+		if(feedItem.downloadId == null && feedItem.downloadFile == null)
+		{
+			val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+			val uri = Uri.parse(feedItem.feedItem.link)
+			val request = DownloadManager.Request(uri)
+					.setVisibleInDownloadsUi(false)
+			val download = FeedItemDownload()
+			download.link = feedItem.feedItem.link
+			download.downloadId = downloadManager.enqueue(request)
+			AppDatabase.getInstance(this).feedItemDownloadDao().insert(download)
+		}
 	}
 
 	override fun onCreateOptionsMenu(menu: Menu): Boolean
@@ -106,5 +135,4 @@ class FeedActivity: LifecycleAppCompatActivity()
 		}
 		return super.onOptionsItemSelected(item)
 	}
-
 }

@@ -22,6 +22,12 @@
         <activity android:name=".EditFeedActivity" />
 
         <activity android:name=".FeedActivity" />
+
+        <receiver android:name=".DownloadReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
