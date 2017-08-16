@@ -15,8 +15,16 @@ class DownloadReceiver: BroadcastReceiver()
 			DownloadManager.ACTION_DOWNLOAD_COMPLETE ->
 			{
 				val downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0)
-				AppDatabase.getInstance(context).feedItemDownloadDao().finishDownload(downloadId, "test")
 				println("download completed $downloadId")
+
+				val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+				val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
+
+				// TODO cursor.moveToNext()
+
+				val localUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
+
+				AppDatabase.getInstance(context).feedItemDownloadDao().finishDownload(downloadId, localUri)
 			}
 		}
 	}
