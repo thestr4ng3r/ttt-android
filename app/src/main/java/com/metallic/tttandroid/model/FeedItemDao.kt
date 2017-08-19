@@ -15,6 +15,9 @@ class FeedItemWithDownload
 
 	@ColumnInfo(name = "download_file")
 	var downloadFile: String? = null
+
+	val isDownloaded get() = downloadFile != null
+	val isDownloading get() = !isDownloaded && downloadId != null
 }
 
 @Dao

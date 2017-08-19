@@ -20,7 +20,8 @@ class DownloadReceiver: BroadcastReceiver()
 				val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 				val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
 
-				// TODO cursor.moveToNext()
+				if(!cursor.moveToNext())
+					return
 
 				val localUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
 

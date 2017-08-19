@@ -1,18 +1,13 @@
 package com.metallic.tttandroid.adapter
 
-import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.text.format.Formatter
 import android.view.View
 import android.view.ViewGroup
-import com.metallic.tttandroid.FeedActivity
 import com.metallic.tttandroid.R
-import com.metallic.tttandroid.model.Feed
-import com.metallic.tttandroid.model.FeedItem
 import com.metallic.tttandroid.model.FeedItemWithDownload
 import com.metallic.tttandroid.utils.inflate
 import kotlinx.android.synthetic.main.item_feed_item.view.*
-import java.text.DateFormat
 
 class FeedRecyclerViewAdapter : RecyclerView.Adapter<FeedRecyclerViewAdapter.ViewHolder>()
 {
@@ -36,6 +31,12 @@ class FeedRecyclerViewAdapter : RecyclerView.Adapter<FeedRecyclerViewAdapter.Vie
 										item.downloadId?.toString() ?:
 										Formatter.formatFileSize(holder.itemView.context, item.feedItem.fileSize)
 
+		holder.iconImageView.setImageResource(when {
+			item.isDownloaded -> 	0
+			item.isDownloading ->	R.drawable.ic_pause_white_24dp
+			else ->					R.drawable.ic_file_download_white_24dp
+		})
+
 		holder.itemView.setOnClickListener {
 			itemOnClickCallback?.let { callback -> callback(item) }
 		}
@@ -45,5 +46,6 @@ class FeedRecyclerViewAdapter : RecyclerView.Adapter<FeedRecyclerViewAdapter.Vie
 	{
 		val titleTextView = itemView.title_text_view!!
 		val durationTextView = itemView.duration_text_view!!
+		val iconImageView = itemView.icon_image_view!!
 	}
 }
