@@ -6,11 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.metallic.tttandroid.model.AppDatabase
+import com.metallic.tttandroid.utils.log
 
 class DownloadReceiver: BroadcastReceiver()
 {
-	val TAG = "DownloadReceiver"
-
 	override fun onReceive(context: Context, intent: Intent)
 	{
 		when(intent.action)
@@ -35,11 +34,11 @@ class DownloadReceiver: BroadcastReceiver()
 
 				if(feedItem == null)
 				{
-					Log.e(TAG, "Failed to get feed item for completed download")
+					log("Failed to get feed item for completed download")
 					return
 				}
 
-				Log.i(TAG, "Download completed for feed item ${feedItem.title}")
+				log("Download completed for feed item ${feedItem.title}")
 
 				val extractIntent = Intent(context, ExtractService::class.java)
 				extractIntent.putExtra(ExtractService.EXTRA_DOWNLOAD_FILE, localUri)

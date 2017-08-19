@@ -21,7 +21,20 @@ class FeedItemWithDownload
 
 	val isDownloaded get() = lectureDir != null
 	val isDownloading get() = !isDownloaded && (downloadId != null || downloadFile != null)
+	val isExtracting get() = !isDownloaded && downloadFile != null
 }
+
+private const val feedItemWithDownloadQuery = "SELECT " +
+		"feed_item.feed_id AS feed_item_feed_id, " +
+		"feed_item.title AS feed_item_title, " +
+		"feed_item.link AS feed_item_link, " +
+		"feed_item.description AS feed_item_description, " +
+		"feed_item.date AS feed_item_date, " +
+		"feed_item.file_size AS feed_item_file_size, " +
+		"feed_item_download.download_id AS download_id, " +
+		"feed_item_download.download_file AS download_file, " +
+		"feed_item_download.lecture_dir AS lecture_dir " +
+		"FROM $tableName LEFT OUTER JOIN feed_item_download ON $tableName.link = feed_item_download.link"
 
 @Dao
 interface FeedItemDao
@@ -35,19 +48,11 @@ interface FeedItemDao
 	@Query("SELECT * FROM $tableName WHERE feed_id = :arg0 ORDER BY date")
 	fun getByFeedId(id: Long): LiveData<List<FeedItem>>
 
-	@Query("SELECT " +
-			"feed_item.feed_id AS feed_item_feed_id, " +
-			"feed_item.title AS feed_item_title, " +
-			"feed_item.link AS feed_item_link, " +
-			"feed_item.description AS feed_item_description, " +
-			"feed_item.date AS feed_item_date, " +
-			"feed_item.file_size AS feed_item_file_size, " +
-			"feed_item_download.download_id AS download_id, " +
-			"feed_item_download.download_file AS download_file, " +
-			"feed_item_download.lecture_dir AS lecture_dir " +
-			"FROM $tableName LEFT OUTER JOIN feed_item_download ON $tableName.link = feed_item_download.link " +
-			"WHERE feed_id = :arg0 ORDER BY date")
+	@Query("$feedItemWithDownloadQuery WHERE feed_id = :arg0 ORDER BY date")
 	fun getByFeedIdWithDownloads(id: Long): LiveData<List<FeedItemWithDownload>>
+
+	@Query("$feedItemWithDownloadQuery WHERE feed_id = :arg0 AND title = :arg1 ORDER BY date")
+	fun getSingleWithDownloads(feedId: Long, title: String): FeedItemWithDownload?
 
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	fun insert(items: List<FeedItem>)

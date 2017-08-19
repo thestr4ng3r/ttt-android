@@ -24,7 +24,7 @@ class FeedViewModel(application: Application): AndroidViewModel(application)
 
 	private var call: Call? = null
 
-	fun initialize(feedId: Long) // TODO: is this really the correct way to init a ViewModel with a parameter?
+	fun initialize(feedId: Long)
 	{
 		if(_feed != null)
 			return

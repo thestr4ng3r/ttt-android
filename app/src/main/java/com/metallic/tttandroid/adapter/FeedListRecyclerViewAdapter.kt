@@ -33,7 +33,7 @@ class FeedListRecyclerViewAdapter : RecyclerView.Adapter<FeedListRecyclerViewAda
 
 		holder.itemView.setOnClickListener {
 			val intent = Intent(holder.itemView.context, FeedActivity::class.java)
-			intent.putExtra(FeedActivity.FEED_ID_EXTRA, item.id)
+			intent.putExtra(FeedActivity.EXTRA_FEED_ID, item.id)
 			holder.itemView.context.startActivity(intent)
 		}
 	}

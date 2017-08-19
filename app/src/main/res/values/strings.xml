@@ -18,6 +18,9 @@
     <string name="action_edit_feed">Edit</string>
     <string name="action_delete_feed">Delete</string>
 
+    <string name="feed_item_subtitle_downloading">Downloading…</string>
+    <string name="feed_item_subtitle_extracting">Extracting…</string>
+
     <string name="dialog_delete_feed_message">Are you sure you want to delete the feed \"%s\"? All downloaded recordings will be deleted as well.</string>
     <string name="dialog_delete_positive">Delete</string>
     <string name="dialog_delete_negative">Cancel</string>

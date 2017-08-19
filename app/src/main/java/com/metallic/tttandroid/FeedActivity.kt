@@ -7,16 +7,13 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.*
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import com.metallic.tttandroid.adapter.FeedRecyclerViewAdapter
 import com.metallic.tttandroid.model.AppDatabase
-import com.metallic.tttandroid.model.FeedItem
 import com.metallic.tttandroid.model.FeedItemDownload
 import com.metallic.tttandroid.model.FeedItemWithDownload
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
@@ -27,7 +24,7 @@ class FeedActivity: LifecycleAppCompatActivity()
 {
 	companion object
 	{
-		const val FEED_ID_EXTRA = "feed_id"
+		const val EXTRA_FEED_ID = "feed_id"
 	}
 
 	private lateinit var viewModel: FeedViewModel
@@ -53,7 +50,7 @@ class FeedActivity: LifecycleAppCompatActivity()
 		recyclerView.adapter = recyclerViewAdapter
 		recyclerViewAdapter.itemOnClickCallback = this::itemClicked
 
-		val feedId = intent.getLongExtra(FEED_ID_EXTRA, 0)
+		val feedId = intent.getLongExtra(EXTRA_FEED_ID, -1)
 
 		viewModel = ViewModelProviders.of(this)[FeedViewModel::class.java]
 		viewModel.initialize(feedId)
@@ -81,7 +78,14 @@ class FeedActivity: LifecycleAppCompatActivity()
 
 	private fun itemClicked(feedItem: FeedItemWithDownload)
 	{
-		if(feedItem.downloadId == null && feedItem.downloadFile == null)
+		if(feedItem.isDownloaded)
+		{
+			val intent = Intent(this, PlaybackActivity::class.java)
+			intent.putExtra(PlaybackActivity.EXTRA_FEED_ID, feedItem.feedItem.feedId)
+			intent.putExtra(PlaybackActivity.EXTRA_FEED_ITEM_TITLE, feedItem.feedItem.title)
+			startActivity(intent)
+		}
+		else if(!feedItem.isDownloading)
 		{
 			val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 			val uri = Uri.parse(feedItem.feedItem.link)

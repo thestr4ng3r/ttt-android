@@ -24,6 +24,8 @@
 
         <activity android:name=".FeedActivity" />
 
+        <activity android:name=".PlaybackActivity" />
+
         <receiver android:name=".DownloadReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
