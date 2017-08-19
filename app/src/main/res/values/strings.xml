@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">TTT Client</string>
 
+    <string name="notification_channel_extract_name">Extract Progress</string>
+    <string name="notification_channel_extract_description">shown while extracting downloaded zip files</string>
+
     <string name="activity_main_title">TTT Feeds</string>
 
     <string name="action_save_title">Save</string>
@@ -18,4 +21,12 @@
     <string name="dialog_delete_feed_message">Are you sure you want to delete the feed \"%s\"? All downloaded recordings will be deleted as well.</string>
     <string name="dialog_delete_positive">Delete</string>
     <string name="dialog_delete_negative">Cancel</string>
+
+    <string name="notification_extracting_title">Extracting Lecture</string>
+    <string name="notification_extracting_text">%s</string>
+
+    <string name="notification_download_finished_tag">finished_download_%s</string>
+
+    <string name="notification_download_finished_title">%s downloaded.</string>
+    <string name="notification_download_finished_text">Successfully downloaded lecture.</string>
 </resources>

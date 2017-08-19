@@ -4,7 +4,7 @@ import android.arch.persistence.room.*
 import android.content.Context
 import java.util.*
 
-@Database(entities = arrayOf(Feed::class, FeedItem::class, FeedItemDownload::class), version = 4)
+@Database(entities = arrayOf(Feed::class, FeedItem::class, FeedItemDownload::class), version = 5)
 @TypeConverters(AppDatabase.Converters::class)
 abstract class AppDatabase: RoomDatabase()
 {

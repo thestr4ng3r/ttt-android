@@ -13,6 +13,12 @@ interface FeedItemDownloadDao
 	@Query("UPDATE $tableName SET download_id = null, download_file = :arg1 WHERE download_id = :arg0")
 	fun finishDownload(downloadId: Long, downloadFile: String?)
 
+	@Query("UPDATE $tableName SET download_file = null, lecture_dir = :arg1 WHERE download_file = :arg0")
+	fun finishExtract(downloadFile: String, lectureDir: String?)
+
+	@Query("SELECT * FROM feed_item JOIN feed_item_download ON feed_item.link = feed_item_download.link WHERE download_id = :arg0")
+	fun feedItemForDownloadId(downloadId: Long): FeedItem?
+
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	fun insert(feed: FeedItemDownload)
 

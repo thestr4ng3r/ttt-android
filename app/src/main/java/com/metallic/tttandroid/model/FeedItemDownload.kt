@@ -16,4 +16,7 @@ class FeedItemDownload
 
 	@ColumnInfo(name = "download_file")
 	var downloadFile: String? = null
+
+	@ColumnInfo(name = "lecture_dir")
+	var lectureDir: String? = null
 }

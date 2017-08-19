@@ -4,10 +4,13 @@ import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.metallic.tttandroid.model.AppDatabase
 
 class DownloadReceiver: BroadcastReceiver()
 {
+	val TAG = "DownloadReceiver"
+
 	override fun onReceive(context: Context, intent: Intent)
 	{
 		when(intent.action)
@@ -15,7 +18,10 @@ class DownloadReceiver: BroadcastReceiver()
 			DownloadManager.ACTION_DOWNLOAD_COMPLETE ->
 			{
 				val downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0)
-				println("download completed $downloadId")
+
+				val db = AppDatabase.getInstance(context)
+
+				val feedItem = db.feedItemDownloadDao().feedItemForDownloadId(downloadId)
 
 				val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 				val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
@@ -25,7 +31,20 @@ class DownloadReceiver: BroadcastReceiver()
 
 				val localUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
 
-				AppDatabase.getInstance(context).feedItemDownloadDao().finishDownload(downloadId, localUri)
+				db.feedItemDownloadDao().finishDownload(downloadId, localUri)
+
+				if(feedItem == null)
+				{
+					Log.e(TAG, "Failed to get feed item for completed download")
+					return
+				}
+
+				Log.i(TAG, "Download completed for feed item ${feedItem.title}")
+
+				val extractIntent = Intent(context, ExtractService::class.java)
+				extractIntent.putExtra(ExtractService.EXTRA_DOWNLOAD_FILE, localUri)
+				extractIntent.putExtra(ExtractService.EXTRA_LECTURE_NAME, feedItem.title)
+				context.startService(extractIntent)
 			}
 		}
 	}
