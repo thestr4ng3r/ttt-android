@@ -46,9 +46,4 @@ class FeedRecyclerViewAdapter : RecyclerView.Adapter<FeedRecyclerViewAdapter.Vie
 		val titleTextView = itemView.title_text_view!!
 		val durationTextView = itemView.duration_text_view!!
 	}
-
-	interface OnItemClickListener
-	{
-		fun onItemClicked(feedItem: FeedItem)
-	}
 }

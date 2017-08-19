@@ -15,7 +15,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.metallic.tttandroid.adapter.FeedRecyclerViewAdapter
-import com.metallic.tttandroid.adapter.FeedRecyclerViewAdapter.OnItemClickListener
 import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.model.FeedItem
 import com.metallic.tttandroid.model.FeedItemDownload
