@@ -1,5 +1,8 @@
 package com.metallic.tttandroid.adapter
 
+import android.app.DownloadManager
+import android.os.Build
+import android.support.annotation.RequiresApi
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +28,7 @@ class FeedRecyclerViewAdapter : RecyclerView.Adapter<FeedRecyclerViewAdapter.Vie
 	override fun getItemCount() = items?.size ?: 0
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder = ViewHolder(parent.inflate(R.layout.item_feed_item))
 
+	@RequiresApi(Build.VERSION_CODES.M)
 	override fun onBindViewHolder(holder: ViewHolder, position: Int)
 	{
 		val item = items?.get(position) ?: return
@@ -32,10 +36,43 @@ class FeedRecyclerViewAdapter : RecyclerView.Adapter<FeedRecyclerViewAdapter.Vie
 		val context = holder.itemView.context
 
 		holder.titleTextView.text = item.feedItem.title
-		holder.subtitleTextView.text = when {
-			item.isExtracting ->	context.getString(R.string.feed_item_subtitle_extracting)
-			item.isDownloading ->	context.getString(R.string.feed_item_subtitle_downloading)
-			else ->					DATE_FORMAT_DATE.format(item.feedItem.date)
+
+		when
+		{
+			item.isExtracting ->
+			{
+				holder.subtitleTextView.text = context.getString(R.string.feed_item_subtitle_extracting)
+			}
+
+			item.isDownloading ->
+			{
+				var downloadStatus = DownloadManager.STATUS_RUNNING
+
+				val downloadId = item.downloadId
+
+				if(downloadId != null)
+				{
+					val downloadManager = context.getSystemService(DownloadManager::class.java)
+					val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
+
+					if(cursor.moveToNext())
+					{
+						downloadStatus = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+					}
+				}
+
+				holder.subtitleTextView.text = context.getString(when(downloadStatus)
+				{
+					DownloadManager.STATUS_FAILED -> R.string.feed_item_subtitle_download_failed
+					DownloadManager.STATUS_PAUSED -> R.string.feed_item_subtitle_download_paused
+					else -> R.string.feed_item_subtitle_downloading
+				})
+			}
+
+			else ->
+			{
+				holder.subtitleTextView.text = DATE_FORMAT_DATE.format(item.feedItem.date)
+			}
 		}
 
 
