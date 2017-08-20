@@ -33,8 +33,8 @@ class FeedRecyclerViewAdapter : RecyclerView.Adapter<FeedRecyclerViewAdapter.Vie
 
 		holder.titleTextView.text = item.feedItem.title
 		holder.subtitleTextView.text = when {
-			item.isDownloading ->	context.getString(R.string.feed_item_subtitle_downloading)
 			item.isExtracting ->	context.getString(R.string.feed_item_subtitle_extracting)
+			item.isDownloading ->	context.getString(R.string.feed_item_subtitle_downloading)
 			else ->					DATE_FORMAT_DATE.format(item.feedItem.date)
 		}
 

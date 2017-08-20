@@ -128,6 +128,9 @@ public class HextileMessage extends FramebufferUpdateMessage {
 			DataInputStream is, DataOutputStream os, int x, int y, int w,
 			int h, boolean updateFlag) throws IOException {
 
+		byte[] hextile_bg_encoded = graphicsContext.getHextile_bg_encoded();
+		byte[] hextile_fg_encoded = graphicsContext.getHextile_fg_encoded();
+
 		// scan hextiles
 		for (int ty = y; ty < y + h; ty += 16) {
 			int th = 16;
@@ -139,7 +142,7 @@ public class HextileMessage extends FramebufferUpdateMessage {
 				if (x + w - tx < 16)
 					tw = x + w - tx;
 				handleHextileSubrect(graphicsContext, is, os, tx, ty, tw, th,
-						updateFlag);
+						hextile_bg_encoded, hextile_fg_encoded);
 			}
 		}
 
@@ -148,7 +151,7 @@ public class HextileMessage extends FramebufferUpdateMessage {
 	// Handle one tile in the Hextile-encoded data.
 	static private void handleHextileSubrect(GraphicsContext graphicsContext,
 			DataInputStream is, DataOutputStream os, int tx, int ty, int tw,
-			int th, boolean updateFlag) throws IOException {
+			int th, byte[] hextile_bg_encoded, byte[] hextile_fg_encoded) throws IOException {
 
 		int subencoding = is.readUnsignedByte();
 
@@ -179,7 +182,7 @@ public class HextileMessage extends FramebufferUpdateMessage {
 		}
 
 		fillRect(graphicsContext, tx, ty, tw, th,
-				graphicsContext.getHextile_bg_encoded(), updateFlag);
+				hextile_bg_encoded);
 
 		// Read the foreground color if specified.
 		if ((subencoding & Constants.HextileForegroundSpecified) != 0) {
@@ -231,7 +234,7 @@ public class HextileMessage extends FramebufferUpdateMessage {
 			sh = (b2 & 0xf) + 1;
 
 			fillRect(graphicsContext, sx, sy, sw, sh,
-					graphicsContext.getHextile_fg_encoded(), updateFlag);
+					hextile_fg_encoded);
 		}
 	}
 
@@ -271,26 +274,18 @@ public class HextileMessage extends FramebufferUpdateMessage {
 
 	// paint sub-reactangle
 	static private void fillRect(GraphicsContext graphicsContext, int x, int y,
-			int w, int h, byte[] colorField, boolean updateFlag) {
-
+			int w, int h, byte[] colorField) {
 		int color = graphicsContext.decodeColor(colorField);
-		fillRect(graphicsContext.getPixels(), new Rect(x, y, x + w, y + h),
-				color, graphicsContext.getPrefs().framebufferWidth);
 
-	}
-
-	public static void fillRect(int[] array, Rect r, int color, int screenWidth) {
-		int x = r.left;
-		int y = r.top;
-		int w = r.width();
-		int h = r.height();
+		int screenWidth = graphicsContext.getPrefs().framebufferWidth;
+		int[] array = graphicsContext.getPixels();
 
 		for (int i = y; i < y + h; i++) {
 			int offset = i * screenWidth + x;
 			for (int j = 0; j < w; j++) {
-
 				array[offset + j] = color;
 			}
 		}
+
 	}
 }
