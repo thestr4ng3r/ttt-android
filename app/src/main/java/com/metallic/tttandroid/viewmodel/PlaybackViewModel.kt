@@ -23,8 +23,8 @@ class PlaybackViewModel(application: Application): AndroidViewModel(application)
 
 	lateinit var tttFile: File private set
 
-	private var _recording: Recording? = null
-	val recording: Recording get() = _recording!!
+	var recording: Recording? = null
+		private set
 
 	lateinit var graphicsLiveData: RecordingGraphicsLiveData
 
@@ -47,9 +47,9 @@ class PlaybackViewModel(application: Application): AndroidViewModel(application)
 		_audioPlayer = MediaPlayer.create(context, audioUri) ?: return false
 		tttFile = File(tttUri.path)
 
-		_recording = Recording(tttFile, audioPlayer)
-		graphicsLiveData = RecordingGraphicsLiveData(recording.graphicsContext)
-		recording.play()
+		recording = Recording(tttFile, audioPlayer)
+		graphicsLiveData = RecordingGraphicsLiveData(recording!!.graphicsContext)
+		recording!!.play()
 
 		return true
 	}
@@ -57,7 +57,7 @@ class PlaybackViewModel(application: Application): AndroidViewModel(application)
 	override fun onCleared()
 	{
 		super.onCleared()
-		_recording?.close()
+		recording?.close()
 		_audioPlayer?.release()
 	}
 }

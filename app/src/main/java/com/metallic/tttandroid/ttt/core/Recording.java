@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.InflaterInputStream;
 
 import com.metallic.tttandroid.ttt.messages.Message;
@@ -38,6 +40,7 @@ import com.metallic.tttandroid.ttt.messages.MessageProducerAdapter;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.media.MediaPlayer;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 
@@ -63,24 +66,38 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	//private final Index index;
 	private File tttFile;
 
-	public Messages getMessages() {
+	public Messages getMessages()
+	{
 		return messages;
 	}
 
-	public Index getIndex() {
+	public Index getIndex()
+	{
 		return null;
 	}
 
-	public GraphicsContext getGraphicsContext() {
+	public GraphicsContext getGraphicsContext()
+	{
 		return this.graphicsContext;
 	}
 
-	public void setMessages(ArrayList<Message> list) {
+	public void setMessages(ArrayList<Message> list)
+	{
 		messages.setmessages(list);
 	}
 
-	public Recording(File tttFile, MediaPlayer audioPlayer) throws IOException
+	public interface Listener
 	{
+		void playbackStateChanged(Recording recording, boolean playing);
+		void timeChanged(Recording recording, int time);
+	}
+
+	private Set<Listener> listeners;
+
+	public Recording(File tttFile, final MediaPlayer audioPlayer) throws IOException
+	{
+		listeners = new HashSet<>();
+
 		this.tttFile = tttFile;
 		// read
 		messages = new Messages(this);
@@ -102,6 +119,27 @@ public class Recording extends MessageProducerAdapter implements Runnable
 
 		graphicsContext.enableRefresh(true);
 		setTime(0, true);
+
+
+		audioPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
+		{
+			@Override
+			public void onCompletion(MediaPlayer mediaPlayer)
+			{
+				playbackStateChanged();
+				timeChanged(audioPlayer.getCurrentPosition());
+			}
+		});
+	}
+
+	public void addListener(Listener listener)
+	{
+		listeners.add(listener);
+	}
+
+	public void removeListener(Listener listener)
+	{
+		listeners.remove(listener);
 	}
 
 	/**
@@ -111,18 +149,16 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	 *            ttt file
 	 * @throws IOException
 	 */
-	void read(File file) throws IOException {
-
-		DataInputStream in = new DataInputStream(new BufferedInputStream(
-				new FileInputStream(file)));
+	private void read(File file) throws IOException
+	{
+		DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
 
 		// read version
 		byte[] b = new byte[12];
 		in.readFully(b);
 
 		// read compressed data
-		in = new DataInputStream(new BufferedInputStream(
-				new InflaterInputStream(in)));
+		in = new DataInputStream(new BufferedInputStream(new InflaterInputStream(in)));
 
 		// read init parameters
 		readServerInit(in, prefs);
@@ -140,18 +176,22 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	}
 
 	@Override
-	public ProtocolPreferences getProtocolPreferences() {
+	public ProtocolPreferences getProtocolPreferences()
+	{
 		return prefs;
 	}
 
-	public void close() {
+	public void close()
+	{
 		// stop thread
-		if (thread != null && thread.isAlive()) {
+		if (thread != null && thread.isAlive())
+		{
 			// end Thread
 			running = false;
 
 			// leave wait()
-			synchronized (this) {
+			synchronized (this)
+			{
 				notify();
 			}
 
@@ -159,7 +199,6 @@ public class Recording extends MessageProducerAdapter implements Runnable
 			while (thread != null && thread.isAlive())
 				Thread.yield();
 		}
-
 	}
 
 	/*******************************************************************************************************************
@@ -174,20 +213,22 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	 * @throws IOException
 	 */
 	static private void readServerInit(DataInputStream in,
-			ProtocolPreferences prefs) throws IOException {
+			ProtocolPreferences prefs) throws IOException
+	{
 		prefs.framebufferWidth = in.readUnsignedShort();
 		prefs.framebufferHeight = in.readUnsignedShort();
 		prefs.bitsPerPixel = in.readUnsignedByte();
-		switch (prefs.bitsPerPixel) {
-		case 8:
-			prefs.bytesPerPixel = 1;
-			break;
-		case 16:
-			prefs.bytesPerPixel = 2;
-			break;
-		default:
-			prefs.bytesPerPixel = 4;
-			break;
+		switch (prefs.bitsPerPixel)
+		{
+			case 8:
+				prefs.bytesPerPixel = 1;
+				break;
+			case 16:
+				prefs.bytesPerPixel = 2;
+				break;
+			default:
+				prefs.bytesPerPixel = 4;
+				break;
 		}
 		prefs.depth = in.readUnsignedByte();
 		prefs.bigEndian = (in.readUnsignedByte() != 0);
@@ -221,10 +262,12 @@ public class Recording extends MessageProducerAdapter implements Runnable
 		extensions = ext;
 	}
 
-	private void readExtensions(DataInputStream in) throws IOException {
+	private void readExtensions(DataInputStream in) throws IOException
+	{
 		// new format without total length of all extensions
 		int len;
-		while ((len = in.readInt()) > 0) {
+		while ((len = in.readInt()) > 0)
+		{
 			byte[] extension = new byte[len];
 			in.readFully(extension);
 
@@ -232,57 +275,63 @@ public class Recording extends MessageProducerAdapter implements Runnable
 		}
 
 		parseExtensions();
-
 	}
 
 	/**
-	 * parse the index tabale and searchbase table (if available)(TTT)
+	 * parse the index table and searchbase table (if available)(TTT)
 	 * 
 	 * @throws IOException
 	 */
-	private void parseExtensions() throws IOException {
-		for (int i = 0; i < extensions.size(); i++) {
+	private void parseExtensions() throws IOException
+	{
+		for (int i = 0; i < extensions.size(); i++)
+		{
 			byte[] extension = extensions.get(i);
-			DataInputStream ext_in = new DataInputStream(
-					new ByteArrayInputStream(extension));
+			DataInputStream ext_in = new DataInputStream(new ByteArrayInputStream(extension));
 			int tag = ext_in.readByte();
-			switch (tag) {
-			case Constants.EXTENSION_INDEX_TABLE:
-				// if (TTT.verbose)
-				// System.out
-				// .println("\n-----------------------------------------------\nReading Index Table\n");
-				try {
-					//index.readIndexExtension(ext_in);
-				} catch (Exception e) {
-					System.out
-							.println("READING OF INDEX TABLE  EXTENSION FAILED: "
-									+ e);
-					// if (TTT.debug)
-					// e.printStackTrace();
-				}
-				break;
 
-			case Constants.EXTENSION_SEARCHBASE_TABLE_WITH_COORDINATES:
-				if (true)
-					System.out
-							.println("\n-----------------------------------------------\nReading Searchbase Extension\n");
-				try {
-					//SearchbaseExtension.readSearchbaseExtension(ext_in, index);
-					// extensions.remove(i);
-				} catch (Exception e) {
-					System.out
-							.println("READING OF SEARCHBASE EXTENSION FAILED: "
-									+ e);
+			switch (tag)
+			{
+				case Constants.EXTENSION_INDEX_TABLE:
+					// if (TTT.verbose)
+					// System.out
+					// .println("\n-----------------------------------------------\nReading Index Table\n");
+					try
+					{
+						// TODO index.readIndexExtension(ext_in);
+					}
+					catch (Exception e)
+					{
+						System.out
+								.println("READING OF INDEX TABLE  EXTENSION FAILED: "
+										+ e);
+						// if (TTT.debug)
+						// e.printStackTrace();
+					}
+					break;
+
+				case Constants.EXTENSION_SEARCHBASE_TABLE_WITH_COORDINATES:
 					if (true)
-						e.printStackTrace();
-				}
-				break;
+						System.out.println("\n-----------------------------------------------\nReading Searchbase Extension\n");
 
-			default:
-				System.out
-						.println("\n-----------------------------------------------\nUNKNOWN EXTENSION (["
-								+ tag + "] " + extension.length + " bytes)\n");
-				break;
+					try
+					{
+						// TODO SearchbaseExtension.readSearchbaseExtension(ext_in, index);
+						// extensions.remove(i);
+					}
+					catch (Exception e) {
+						System.out
+								.println("READING OF SEARCHBASE EXTENSION FAILED: "
+										+ e);
+						if (true)
+							e.printStackTrace();
+					}
+					break;
+
+				default:
+					System.out.println("\n-----------------------------------------------\nUNKNOWN EXTENSION (["
+									+ tag + "] " + extension.length + " bytes)\n");
+					break;
 			}
 		}
 	}
@@ -299,7 +348,8 @@ public class Recording extends MessageProducerAdapter implements Runnable
 
 	public int next_message;
 
-	public boolean isPlaying() {
+	public boolean isPlaying()
+	{
 		return audioPlayer.isPlaying();
 	}
 
@@ -308,16 +358,20 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	// synchronize message and audio/video stream
 	// (TTT)
 	@Override
-	public void run() {
+	public void run()
+	{
 		long t = System.currentTimeMillis();
 		Message message = messages.get(next_message);
-		while (running) {
-			try {
-				synchronized (this) {
+		int lastTime = audioPlayer.getCurrentPosition();
+		while (running)
+		{
+			try
+			{
+				synchronized (this)
+				{
 					// wait if pause mode
-					while (running && (paused || adjusting)) {
+					while (running && (paused || adjusting))
 						wait();
-					}
 
 					// closing
 					if (!running)
@@ -330,8 +384,14 @@ public class Recording extends MessageProducerAdapter implements Runnable
 					// delay if too early
 					int time = audioPlayer.getCurrentPosition();
 
-					if (messages.get(next_message).timestamp <= time) {
+					if(time != lastTime)
+						timeChanged(time);
 
+					lastTime = time;
+
+
+					if (messages.get(next_message).timestamp <= time)
+					{
 						message = messages.get(next_message);
 
 						// closing
@@ -341,7 +401,8 @@ public class Recording extends MessageProducerAdapter implements Runnable
 						// // state changed - active message may be outdated
 
 						// // abort
-						if (interrupted || adjusting) {
+						if (interrupted || adjusting)
+						{
 							interrupted = false;
 							continue;
 						}
@@ -355,9 +416,10 @@ public class Recording extends MessageProducerAdapter implements Runnable
 						// increase message counter
 						next_message++;
 					}
-
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e)
+			{
 				stop();
 				System.out.println("Replay Failed " + e.toString());
 				t = System.currentTimeMillis() - t;
@@ -369,13 +431,14 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	}
 
 	// used by acuitus.com
-	public void setNextMessage(int next) {
+	public void setNextMessage(int next)
+	{
 		next_message = next;
 	}
 
-	public void highlightSearchResults(Canvas canvas) {
-		//index.highlightSearchResultsOfCurrentIndex(canvas);
-
+	public void highlightSearchResults(Canvas canvas)
+	{
+		// TODO index.highlightSearchResultsOfCurrentIndex(canvas);
 	}
 
 	/*******************************************************************************************************************
@@ -384,9 +447,11 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	private Thread thread;
 
 	// start playback
-	synchronized public void play() {
+	synchronized public void play()
+	{
 		// ensure thread is running
-		if (thread == null) {
+		if (thread == null)
+		{
 			thread = new Thread(this);
 			thread.start();
 		}
@@ -394,39 +459,48 @@ public class Recording extends MessageProducerAdapter implements Runnable
 		paused = false;
 		if (audioPlayer != null)
 			audioPlayer.start();
+
 		interrupt();
+
+		playbackStateChanged();
 	}
 
 	//
 	// pause playback
-	synchronized public void pause() {
+	synchronized public void pause()
+	{
 		// fireTimeChangedEvent(TimeChangedListener.PAUSE);
 		paused = true;
+
 		if (audioPlayer != null)
 			audioPlayer.pause();
+
 		interrupt();
+
+		playbackStateChanged();
 	}
 
-	//
-	public boolean paused() {
+	public boolean paused()
+	{
 		return paused;
 	}
 
-	//
 	// set playback to next index
-	synchronized public void next() {
-		//setTime(index.getNextIndex().getTimestamp(), true);
+	synchronized public void next()
+	{
+		// TODO setTime(index.getNextIndex().getTimestamp(), true);
 	}
 
-	//
+
 	// set playback to previous index
-	synchronized public void previous() {
-		//setTime(index.getPreviousIndex().getTimestamp(), true);
+	synchronized public void previous()
+	{
+		// TODO setTime(index.getPreviousIndex().getTimestamp(), true);
 	}
 
-	synchronized public void stop() {
+	synchronized public void stop()
+	{
 		pause();
-
 	}
 
 	/**
@@ -438,8 +512,8 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	 * @param refresh
 	 *            determines if the imageview should be updated, too
 	 */
-	public void setTime(int time, boolean refresh) {
-
+	public void setTime(int time, boolean refresh)
+	{
 		// refresh determine if display is updated or not
 
 		// loop is stopped due to performance problems
@@ -453,14 +527,10 @@ public class Recording extends MessageProducerAdapter implements Runnable
 			// focusCurrentIndexEntry(time);
 			//index.setCorrespondingIndex(time);
 			setAudioPlayerTime(time);
-
-			// TODO
-			/*if (time == 0)
-				graphicsContext.updateView(true);
-			else
-				graphicsContext.updateView(false);*/
 			graphicsContext.updateImage();
 		}
+
+		timeChanged(time);
 
 		// while loop is started again
 		if (adjusting)
@@ -469,12 +539,14 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	}
 
 	// distinguish notify from timeout after wait
-	synchronized private void interrupt() {
+	synchronized private void interrupt()
+	{
 		interrupted = true;
 		notify();
 	}
 
-	synchronized void setAdjusting(boolean state) {
+	synchronized void setAdjusting(boolean state)
+	{
 		adjusting = state;
 		notify();
 
@@ -485,7 +557,8 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	 * 
 	 * @param time
 	 */
-	public void setAudioPlayerTime(int time) {
+	public void setAudioPlayerTime(int time)
+	{
 		// synchronize audio/video
 		if (audioPlayer != null)
 			audioPlayer.seekTo(time);
@@ -498,7 +571,8 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	/**
 	 * returns playback time(TTT)
 	 */
-	synchronized public int getTime() {
+	synchronized public int getTime()
+	{
 		if (audioPlayer != null)
 			// playback time
 			return audioPlayer.getCurrentPosition();
@@ -510,28 +584,24 @@ public class Recording extends MessageProducerAdapter implements Runnable
 
 	//
 	// playback duration
-	public int getDuration() {
+	public int getDuration()
+	{
 		if (audioPlayer != null)
 			return audioPlayer.getDuration();
 		return messages.get(messages.size() - 1).getTimestamp();
 
 	}
 
-	// ///////////////////////////////////////////////////////////////////////
-	// event handling
-	// ///////////////////////////////////////////////////////////////////////
-
-	/**
-	 * reacts on the seekto method og the media controller in the
-	 * PlayerActivity. Sets the time and update the ImageView
-	 * 
-	 * @param pos
-	 */
-	public void sliderStateChanged(int pos) {
-
-		// bitmap is set and display is updated
-		setTime(pos, true);
-
+	private void playbackStateChanged()
+	{
+		boolean isPlaying = isPlaying();
+		for(Listener listener : listeners)
+			listener.playbackStateChanged(this, isPlaying);
 	}
 
+	private void timeChanged(int time)
+	{
+		for(Listener listener : listeners)
+			listener.timeChanged(this, time);
+	}
 }
