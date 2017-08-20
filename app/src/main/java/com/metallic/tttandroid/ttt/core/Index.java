@@ -53,9 +53,9 @@ import com.metallic.tttandroid.ttt.messages.annotations.DeleteAllAnnotation;
  * handles updating the running index, initialize scrollview and handles the
  * focusing of the current indexEntry. Adopted parts from TTT will be marked
  * with (TTT)
- * 
+ *
  * @author Thomas Krex
- * 
+ *
  */
 public class Index {
 
@@ -256,7 +256,7 @@ public class Index {
 
 	/**
 	 * Methods for extracting index information out of the ttt-File (TTT)
-	 * 
+	 *
 	 */
 
 	// read from extension
@@ -363,8 +363,8 @@ public class Index {
 			// read message
 			Message message = recording.getMessages().get(message_nr);
 			int start = message.getTimestamp();
-			
-			
+
+
 
 			// delete flag
 			boolean marked_to_be_deleted = false;
@@ -430,7 +430,7 @@ public class Index {
 	/**
 	 * Create Thumnails for each index entry, time is set, and the bitmap
 	 * created in graphicsContext
-	 * 
+	 *
 	 * @return
 	 * @throws IOException
 	 */
@@ -451,7 +451,7 @@ public class Index {
 			recording.setTime(timestamp, false);
 
 			// create screenshot
-			Bitmap screenshot = recording.graphicsContext()
+			Bitmap screenshot = recording.getGraphicsContext()
 					.createScreenshotWithoutAnnotations();
 
 			// insert the bitmap in the indexEntry
@@ -523,10 +523,10 @@ public class Index {
 
 	/**
 	 * returns the number of the index entry for a certain time
-	 * 
+	 *
 	 * @param time
 	 *            the timestamp
-	 * 
+	 *
 	 * @return IndexEntry for this timestamp
 	 */
 	synchronized public IndexEntry getCorrespondingIndex(int time) {
@@ -540,7 +540,7 @@ public class Index {
 
 	/**
 	 * setting the index entry for a certain time
-	 * 
+	 *
 	 * @param time
 	 *            timestamp
 	 */
@@ -570,9 +570,9 @@ public class Index {
 
 	/**
 	 * get next Index Entry(TTT)
-	 * 
+	 *
 	 * @return index entry
-	 * 
+	 *
 	 */
 	synchronized public IndexEntry getNextIndex() {
 		if (nowPlayingIndex_startingAtZero + 1 < index.size())
@@ -583,7 +583,7 @@ public class Index {
 
 	/**
 	 * get previous IndexEntry(TTT)
-	 * 
+	 *
 	 * @return index entry
 	 */
 	synchronized public IndexEntry getPreviousIndex() {
@@ -595,7 +595,7 @@ public class Index {
 
 	/**
 	 * checks if current index has changed
-	 * 
+	 *
 	 * @param timestamp
 	 *            current timestamp
 	 */
@@ -624,7 +624,7 @@ public class Index {
 	/**
 	 * if index current index has changed scrollview is scrolled to this view
 	 * and index entry is highlighted
-	 * 
+	 *
 	 * @param indexNumber
 	 *            number of the new current index
 	 */
@@ -665,7 +665,7 @@ public class Index {
 	/**
 	 * seacrhing for a given keyword(TTT). if index entry contains searchword ,
 	 * it will be added to search_index
-	 * 
+	 *
 	 * @param searchword
 	 */
 	public void search(String searchword) {
@@ -701,7 +701,7 @@ public class Index {
 
 	/**
 	 * highlighting the searchResults of the current index on the main image
-	 * 
+	 *
 	 * @param canvas
 	 *            canvas to paint on the main Bitmap
 	 */

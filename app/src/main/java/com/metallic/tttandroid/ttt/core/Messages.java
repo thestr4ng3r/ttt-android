@@ -348,7 +348,7 @@ public class Messages {
 		// now paint collected messages (keyframe)
 		for (int i = 0; i < collected.size(); i++) {
 			// System.out.println(collected.get(i));
-			collected.get(i).paint(recording.graphicsContext());
+			collected.get(i).paint(recording.getGraphicsContext());
 		}
 
 		// set next message for run loop
@@ -490,7 +490,7 @@ public class Messages {
 		// now paint collected messages (keyframe)
 		for (int i = 0; i < collected.size(); i++) {
 			// System.out.println(collected.get(i));
-			collected.get(i).paint(recording.graphicsContext());
+			collected.get(i).paint(recording.getGraphicsContext());
 		}
 
 		// set next message for run loop

@@ -8,6 +8,9 @@ import android.graphics.Paint;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.metallic.tttandroid.ttt.messages.Message;
 import com.metallic.tttandroid.ttt.messages.MessageConsumer;
@@ -27,7 +30,6 @@ import com.metallic.tttandroid.ttt.utils.BitmapContainer;
 public class GraphicsContext implements MessageConsumer {
 
 	private final BitmapContainer bitmapContainer;
-	private ImageView imgView;
 
 	private boolean refreshEnabled = false;
 	private final MessageProducer producer;
@@ -38,8 +40,9 @@ public class GraphicsContext implements MessageConsumer {
 	private final byte[] hextile_fg_encoded;
 	private final int[] pixels;
 
-	public GraphicsContext(ImageView imgV, Recording record) {
-		setImageView(imgV);
+	private Set<Listener> listeners;
+
+	public GraphicsContext(Recording record) {
 		this.producer = record;
 		this.recording = record;
 		producer.addMessageConsumer(this);
@@ -54,6 +57,17 @@ public class GraphicsContext implements MessageConsumer {
 		hextile_bg_encoded = new byte[prefs.bytesPerPixel];
 		hextile_fg_encoded = new byte[prefs.bytesPerPixel];
 
+		listeners = new HashSet<>();
+	}
+
+	public void addListener(Listener listener)
+	{
+		listeners.add(listener);
+	}
+
+	public void removeListener(Listener listener)
+	{
+		listeners.remove(listener);
 	}
 
 	public void enableRefresh(boolean refresh) {
@@ -62,10 +76,6 @@ public class GraphicsContext implements MessageConsumer {
 
 	public boolean isRefreshEnabled() {
 		return refreshEnabled;
-	}
-
-	public void setImageView(ImageView imgV) {
-		this.imgView = imgV;
 	}
 
 	public int[] getPixels() {
@@ -101,7 +111,7 @@ public class GraphicsContext implements MessageConsumer {
 	 * 
 	 * 
 	 */
-	public void updateView(boolean setBitmap) {
+	/*public void updateView(final ImageView imgView, boolean setBitmap) {
 		
 		if (refreshEnabled) {
 			// get Bitmap without Annotations or highlighted search results
@@ -109,10 +119,8 @@ public class GraphicsContext implements MessageConsumer {
 			// define canvas, which draws in the bitmap
 			Canvas canvas = new Canvas(bitmap);
 
-			if (isWhiteboardEnabled())
-				paintWhiteboard(canvas);
-			paintAnnotations(canvas);
-			recording.highlightSearchResults(canvas);
+			paint(canvas);
+
 			if (setBitmap)
 				imgView.post(new Runnable() {
 
@@ -128,6 +136,26 @@ public class GraphicsContext implements MessageConsumer {
 				imgView.postInvalidate();
 
 		}
+	}*/
+
+	public void updateImage()
+	{
+		// get Bitmap without Annotations or highlighted search results
+		final Bitmap bitmap = bitmapContainer.getBitmap();
+		// define canvas, which draws in the bitmap
+		Canvas canvas = new Canvas(bitmap);
+		paint(canvas);
+
+		for(Listener listener : listeners)
+			listener.imageChanged(bitmap);
+	}
+
+	public void paint(Canvas canvas)
+	{
+		if (isWhiteboardEnabled())
+			paintWhiteboard(canvas);
+		paintAnnotations(canvas);
+		recording.highlightSearchResults(canvas);
 	}
 
 	/**
@@ -176,7 +204,7 @@ public class GraphicsContext implements MessageConsumer {
 	public void handleMessage(Message message) {
 		
 		message.paint(this);
-		updateView(false);
+		updateImage();
 
 	}
 
@@ -290,7 +318,7 @@ public class GraphicsContext implements MessageConsumer {
 	public void setWhiteboardPage(int whiteboardPage) {
 		this.whiteboardPage = whiteboardPage;
 		clearAnnotations();
-		updateView(false);
+		updateImage();
 	}
 
 	// updates for late comers and recorders
@@ -310,7 +338,7 @@ public class GraphicsContext implements MessageConsumer {
 
 	}
 
-	public void setBitmap() {
+	public void setBitmap(final ImageView imgView) {
 		imgView.post(new Runnable() {
 
 			@Override
@@ -319,5 +347,10 @@ public class GraphicsContext implements MessageConsumer {
 
 			}
 		});
+	}
+
+	public interface Listener
+	{
+		void imageChanged(Bitmap frame);
 	}
 }

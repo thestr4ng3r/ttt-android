@@ -1,8 +1,11 @@
 package com.metallic.tttandroid
 
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Handler
+import android.widget.ImageView
 import com.metallic.tttandroid.ttt.core.Recording
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
 import com.metallic.tttandroid.utils.logError
@@ -18,6 +21,8 @@ class PlaybackActivity: LifecycleAppCompatActivity()
 	}
 
 	private lateinit var viewModel: PlaybackViewModel
+
+	private lateinit var imageView: ImageView
 
 	override fun onCreate(savedInstanceState: Bundle?)
 	{
@@ -37,9 +42,11 @@ class PlaybackActivity: LifecycleAppCompatActivity()
 
 		test_text_view.text = viewModel.feedItem.feedItem.title
 
-		AsyncTask.execute {
-			val recording = Recording(this, viewModel.tttFile, viewModel.audioPlayer, playback_image_view, null)
-			recording.play()
-		}
+		imageView = playback_image_view
+
+		viewModel.graphicsLiveData.observe(this, Observer { bitmap ->
+			imageView.setImageBitmap(bitmap)
+			imageView.invalidate()
+		})
 	}
 }

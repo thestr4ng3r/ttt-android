@@ -52,7 +52,8 @@ public class DeleteAnnotation extends Annotation {
 	@Override
 	public void paint(GraphicsContext graphicsContext) {
 		graphicsContext.removeAnnotationsAt(x, y);
-		graphicsContext.updateView(false);
+		//graphicsContext.updateView(false);
+		graphicsContext.updateImage();
 	}
 
 	@Override

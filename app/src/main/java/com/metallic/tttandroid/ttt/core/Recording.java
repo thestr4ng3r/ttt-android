@@ -45,7 +45,7 @@ import android.widget.ScrollView;
  * main class for controlling the replay of an lecture. It is parsing the
  * recording file. the resulting information are messages, the protocol
  * preferences, the index with all index entries. After that, it initialize the
- * index Viewer. This class also contains the main loop for the replay. Mehtods
+ * index Viewer. This class also contains the main loop for the replay. Methods
  * that are adopted from TTT will be marked with "(TTT)".
  * 
  * 
@@ -53,13 +53,14 @@ import android.widget.ScrollView;
  * @author Thomas Krex
  * 
  */
-public class Recording extends MessageProducerAdapter implements Runnable {
+public class Recording extends MessageProducerAdapter implements Runnable
+{
 	private final ProtocolPreferences prefs;
 	private final GraphicsContext graphicsContext;
 	private final MediaPlayer audioPlayer;
 
 	private final Messages messages;
-	private final Index index;
+	//private final Index index;
 	private File tttFile;
 
 	public Messages getMessages() {
@@ -67,10 +68,10 @@ public class Recording extends MessageProducerAdapter implements Runnable {
 	}
 
 	public Index getIndex() {
-		return this.index;
+		return null;
 	}
 
-	public GraphicsContext graphicsContext() {
+	public GraphicsContext getGraphicsContext() {
 		return this.graphicsContext;
 	}
 
@@ -78,27 +79,26 @@ public class Recording extends MessageProducerAdapter implements Runnable {
 		messages.setmessages(list);
 	}
 
-	public Recording(Context context, File tttFile, MediaPlayer audioPlayer,
-			ImageView imgV, ScrollView scrollView) throws IOException {
+	public Recording(File tttFile, MediaPlayer audioPlayer) throws IOException
+	{
 		this.tttFile = tttFile;
 		// read
 		messages = new Messages(this);
 		prefs = new ProtocolPreferences();
 		this.audioPlayer = audioPlayer;
-		index = new Index(this, scrollView, context);
+		//index = new Index(this, scrollView, context);
 
 		// read messages + extensions
 		read(this.tttFile);
 
-		graphicsContext = new GraphicsContext(imgV, this);
-
+		graphicsContext = new GraphicsContext(this);
 		// compute Index if not available in extensions
-		if (!index.isValid())
+		/*if (!index.isValid())
 			index.computeIndex();
 		index.extractAnnotations();
 		if (!index.thumbnailsAvailable())
 			index.createScreenshots();
-		index.initIndexView();
+		index.initIndexView();*/
 
 		graphicsContext.enableRefresh(true);
 		setTime(0, true);
@@ -252,7 +252,7 @@ public class Recording extends MessageProducerAdapter implements Runnable {
 				// System.out
 				// .println("\n-----------------------------------------------\nReading Index Table\n");
 				try {
-					index.readIndexExtension(ext_in);
+					//index.readIndexExtension(ext_in);
 				} catch (Exception e) {
 					System.out
 							.println("READING OF INDEX TABLE  EXTENSION FAILED: "
@@ -267,7 +267,7 @@ public class Recording extends MessageProducerAdapter implements Runnable {
 					System.out
 							.println("\n-----------------------------------------------\nReading Searchbase Extension\n");
 				try {
-					SearchbaseExtension.readSearchbaseExtension(ext_in, index);
+					//SearchbaseExtension.readSearchbaseExtension(ext_in, index);
 					// extensions.remove(i);
 				} catch (Exception e) {
 					System.out
@@ -350,7 +350,7 @@ public class Recording extends MessageProducerAdapter implements Runnable {
 						deliverMessage(message);
 
 						// update index viewer
-						index.updateRunningIndex(message.getTimestamp());
+						//index.updateRunningIndex(message.getTimestamp());
 
 						// increase message counter
 						next_message++;
@@ -374,7 +374,7 @@ public class Recording extends MessageProducerAdapter implements Runnable {
 	}
 
 	public void highlightSearchResults(Canvas canvas) {
-		index.highlightSearchResultsOfCurrentIndex(canvas);
+		//index.highlightSearchResultsOfCurrentIndex(canvas);
 
 	}
 
@@ -415,13 +415,13 @@ public class Recording extends MessageProducerAdapter implements Runnable {
 	//
 	// set playback to next index
 	synchronized public void next() {
-		setTime(index.getNextIndex().getTimestamp(), true);
+		//setTime(index.getNextIndex().getTimestamp(), true);
 	}
 
 	//
 	// set playback to previous index
 	synchronized public void previous() {
-		setTime(index.getPreviousIndex().getTimestamp(), true);
+		//setTime(index.getPreviousIndex().getTimestamp(), true);
 	}
 
 	synchronized public void stop() {
@@ -451,12 +451,15 @@ public class Recording extends MessageProducerAdapter implements Runnable {
 		if (refresh) {
 
 			// focusCurrentIndexEntry(time);
-			index.setCorrespondingIndex(time);
+			//index.setCorrespondingIndex(time);
 			setAudioPlayerTime(time);
-			if (time == 0)
+
+			// TODO
+			/*if (time == 0)
 				graphicsContext.updateView(true);
 			else
-				graphicsContext.updateView(false);
+				graphicsContext.updateView(false);*/
+			graphicsContext.updateImage();
 		}
 
 		// while loop is started again
