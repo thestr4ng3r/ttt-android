@@ -8,6 +8,8 @@
 
     <string name="action_save_title">Save</string>
 
+    <string name="feed_list_empty">No feeds added yet.</string>
+
     <string name="feed_name_hint">Feed Title</string>
     <string name="feed_name_edit_error">Please enter a title.</string>
     <string name="feed_url_hint">URL</string>
@@ -15,6 +17,7 @@
 
     <string name="feed_loading_error">Error while loading the feed.</string>
 
+    <string name="action_refresh_feed">Refresh</string>
     <string name="action_edit_feed">Edit</string>
     <string name="action_delete_feed">Delete</string>
 

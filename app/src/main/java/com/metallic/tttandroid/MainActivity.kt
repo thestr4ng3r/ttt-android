@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.View
 import com.metallic.tttandroid.adapter.FeedListRecyclerViewAdapter
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
 import com.metallic.tttandroid.viewmodel.FeedListViewModel
@@ -42,6 +43,9 @@ class MainActivity : LifecycleAppCompatActivity()
 		}
 
 		viewModel = ViewModelProviders.of(this)[FeedListViewModel::class.java]
-		viewModel.feeds.observe(this, Observer { items -> recyclerViewAdapter.items = items })
+		viewModel.feeds.observe(this, Observer { items ->
+			recyclerViewAdapter.items = items
+			empty_text_view.visibility = if(items?.isEmpty() ?: true) View.VISIBLE else View.GONE
+		})
 	}
 }

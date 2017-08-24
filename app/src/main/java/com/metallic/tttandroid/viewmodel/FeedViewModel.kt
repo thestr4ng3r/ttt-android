@@ -4,6 +4,7 @@ import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
+import android.os.Handler
 import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.model.Feed
 import com.metallic.tttandroid.model.FeedItem
@@ -17,12 +18,13 @@ class FeedViewModel(application: Application): AndroidViewModel(application)
 	private var _feed: Feed? = null
 	val feed: Feed get() = _feed!!
 
-	private val _feedData = MutableLiveData<FeedResponse>()
-	val feedData: LiveData<FeedResponse> get() = _feedData
+	val feedData = MutableLiveData<FeedResponse>()
 
 	lateinit var feedItems: LiveData<List<FeedItemWithDownload>>
 
 	private var call: Call? = null
+
+	val isRefreshing: Boolean get() = (call != null)
 
 	fun initialize(feedId: Long)
 	{
@@ -34,11 +36,21 @@ class FeedViewModel(application: Application): AndroidViewModel(application)
 		_feed = db.feedDao().getById(feedId)
 		feedItems = db.feedItemDao().getByFeedIdWithDownloads(feed.id)
 
+		refreshFeed()
+	}
+
+	fun refreshFeed()
+	{
+		if(call != null)
+			return
+
+		val db = AppDatabase.getInstance(getApplication())
+
 		val url = _feed?.fullUri?.toString()
 
 		if(url == null)
 		{
-			_feedData.postValue(FeedResponse(null))
+			feedData.postValue(FeedResponse(null))
 			return
 		}
 
@@ -49,7 +61,8 @@ class FeedViewModel(application: Application): AndroidViewModel(application)
 		call = OkHttpClient().newCall(request)
 		call?.enqueueFeed { response ->
 			call = null
-			_feedData.postValue(response)
+
+			feedData.postValue(response)
 
 			val items = response.items
 			if(items != null)

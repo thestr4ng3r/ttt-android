@@ -7,11 +7,14 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.*
 import android.net.Uri
 import android.os.Bundle
+import android.support.design.widget.Snackbar
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import com.metallic.tttandroid.adapter.FeedRecyclerViewAdapter
 import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.model.FeedItemDownload
@@ -31,6 +34,10 @@ class FeedActivity: LifecycleAppCompatActivity()
 
 	private lateinit var recyclerView: RecyclerView
 	private lateinit var recyclerViewAdapter: FeedRecyclerViewAdapter
+
+	private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+
+	private var snackbar: Snackbar? = null
 
 	override fun onCreate(savedInstanceState: Bundle?)
 	{
@@ -57,21 +64,24 @@ class FeedActivity: LifecycleAppCompatActivity()
 
 		title = viewModel.feed.name
 
-		progress_bar.show()
-		/*viewModel.feedData.observe(this, Observer { response ->
-			progress_bar.hide()
+		swipeRefreshLayout = swipe_refresh_layout
+		swipeRefreshLayout.isRefreshing = viewModel.isRefreshing
+
+		viewModel.feedData.observe(this, Observer { response ->
+			swipeRefreshLayout.isRefreshing = false
 			val items = response?.items
 			if(items == null)
-				error_text_view.visibility = View.VISIBLE
+				showLoadingError()
 			else
-				recyclerViewAdapter.items = items
-		})*/
+			{
+				snackbar?.dismiss()
+				snackbar = null
+			}
+		})
+
+		swipeRefreshLayout.setOnRefreshListener { viewModel.refreshFeed() }
 
 		viewModel.feedItems.observe(this, Observer { items ->
-			progress_bar.hide()
-			/*if(items == null)
-				error_text_view.visibility = View.VISIBLE
-			else*/
 			recyclerViewAdapter.items = items
 		})
 	}
@@ -98,6 +108,20 @@ class FeedActivity: LifecycleAppCompatActivity()
 		}
 	}
 
+	private fun refreshFeed()
+	{
+		swipeRefreshLayout.isRefreshing = true
+		viewModel.refreshFeed()
+	}
+
+	private fun showLoadingError()
+	{
+		val snackbar = Snackbar.make(coordinator_layout, R.string.feed_loading_error, Snackbar.LENGTH_INDEFINITE)
+		snackbar.setAction(R.string.action_refresh_feed, { refreshFeed() })
+		snackbar.show()
+		this.snackbar = snackbar
+	}
+
 	override fun onCreateOptionsMenu(menu: Menu): Boolean
 	{
 		menuInflater.inflate(R.menu.activity_feed_toolbar, menu)
@@ -113,6 +137,8 @@ class FeedActivity: LifecycleAppCompatActivity()
 				finish()
 				return true
 			}
+
+			R.id.action_refresh -> refreshFeed()
 
 			R.id.action_edit ->
 			{
