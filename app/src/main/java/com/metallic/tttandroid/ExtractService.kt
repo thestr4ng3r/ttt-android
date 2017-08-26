@@ -1,5 +1,6 @@
 package com.metallic.tttandroid
 
+import android.app.DownloadManager
 import android.app.IntentService
 import android.app.Notification
 import android.app.NotificationManager
@@ -21,6 +22,7 @@ class ExtractService: IntentService("ExtractService")
 {
 	companion object
 	{
+		val EXTRA_DOWNLOAD_ID = "download_id"
 		val EXTRA_DOWNLOAD_FILE = "download_file"
 		val EXTRA_LECTURE_NAME = "lecture_name"
 	}
@@ -28,6 +30,7 @@ class ExtractService: IntentService("ExtractService")
 	@RequiresApi(Build.VERSION_CODES.O)
 	override fun onHandleIntent(intent: Intent)
 	{
+		val downloadId = intent.getLongExtra(EXTRA_DOWNLOAD_ID, 0)
 		val downloadFile = intent.getStringExtra(EXTRA_DOWNLOAD_FILE)
 		val downloadUri = Uri.parse(downloadFile)
 
@@ -51,7 +54,7 @@ class ExtractService: IntentService("ExtractService")
 		unzip(inputStream, lectureDir.absolutePath)
 		inputStream.close()
 
-		// TODO: delete downloadFile
+		getSystemService(DownloadManager::class.java).remove(downloadId)
 
 		AppDatabase.getInstance(this).feedItemDownloadDao().finishExtract(downloadFile, lectureDir.absolutePath)
 

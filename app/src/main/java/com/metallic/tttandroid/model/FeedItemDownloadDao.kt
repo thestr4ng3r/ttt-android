@@ -10,6 +10,15 @@ interface FeedItemDownloadDao
 	@Query("SELECT * FROM $tableName")
 	fun getAll(): List<FeedItemDownload>
 
+	@Query("DELETE FROM $tableName WHERE link IN(:arg0)")
+	fun deleteDownloads(link: List<String>)
+
+	@Query("UPDATE $tableName SET download_file = null WHERE download_id = :arg0")
+	fun finishDownloadFailed(downloadId: Long)
+
+	@Query("UPDATE $tableName SET download_id = null WHERE download_id = :arg0")
+	fun finishDownloadCanceled(downloadId: Long)
+
 	@Query("UPDATE $tableName SET download_id = null, download_file = :arg1 WHERE download_id = :arg0")
 	fun finishDownload(downloadId: Long, downloadFile: String?)
 

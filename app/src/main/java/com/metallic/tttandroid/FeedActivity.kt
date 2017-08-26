@@ -6,19 +6,22 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.*
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.support.annotation.RequiresApi
 import android.support.design.widget.Snackbar
 import android.support.v4.widget.SwipeRefreshLayout
+import android.support.v7.view.ActionMode
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import com.metallic.tttandroid.adapter.FeedRecyclerViewAdapter
 import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.model.FeedItemDownload
 import com.metallic.tttandroid.model.FeedItemWithDownload
+import com.metallic.tttandroid.model.deleteDownloadFiles
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
 import com.metallic.tttandroid.viewmodel.FeedViewModel
 import kotlinx.android.synthetic.main.activity_feed.*
@@ -56,6 +59,8 @@ class FeedActivity: LifecycleAppCompatActivity()
 		recyclerViewAdapter = FeedRecyclerViewAdapter()
 		recyclerView.adapter = recyclerViewAdapter
 		recyclerViewAdapter.itemOnClickCallback = this::itemClicked
+		recyclerViewAdapter.itemOnLongClickCallback = this::itemLongClicked
+		recyclerViewAdapter.itemSelection = { item -> selectedItemTitles.contains(item.feedItem.title) }
 
 		val feedId = intent.getLongExtra(EXTRA_FEED_ID, -1)
 
@@ -88,24 +93,135 @@ class FeedActivity: LifecycleAppCompatActivity()
 
 	private fun itemClicked(feedItem: FeedItemWithDownload)
 	{
-		if(feedItem.isDownloaded)
+		if(selectActionMode != null)
+		{
+			toggleItemSelection(feedItem)
+		}
+		else if(feedItem.isDownloaded)
 		{
 			val intent = Intent(this, PlaybackActivity::class.java)
 			intent.putExtra(PlaybackActivity.EXTRA_FEED_ID, feedItem.feedItem.feedId)
 			intent.putExtra(PlaybackActivity.EXTRA_FEED_ITEM_TITLE, feedItem.feedItem.title)
 			startActivity(intent)
 		}
-		else if(!feedItem.isDownloading)
+		else if(feedItem.isDownloading && !feedItem.isExtracting)
 		{
 			val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-			val uri = Uri.parse(feedItem.feedItem.link)
-			val request = DownloadManager.Request(uri)
-					.setVisibleInDownloadsUi(false)
-			val download = FeedItemDownload()
-			download.link = feedItem.feedItem.link
-			download.downloadId = downloadManager.enqueue(request)
-			AppDatabase.getInstance(this).feedItemDownloadDao().insert(download)
+
+			val downloadId = feedItem.downloadId!!
+
+			val query = DownloadManager.Query()
+					.setFilterById()
+			val cursor = downloadManager.query(query)
+
+			if(!cursor.moveToNext())
+				return
+
+			val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+
+			if(status == DownloadManager.STATUS_FAILED)
+			{
+				downloadManager.remove(downloadId)
+				startDownload(feedItem)
+			}
 		}
+		else if(!feedItem.isExtracting)
+		{
+			startDownload(feedItem)
+		}
+	}
+
+
+	private val selectedItemTitles = mutableSetOf<String>()
+	private var selectActionMode: ActionMode? = null
+
+	private val selectActionModeCallback = object: ActionMode.Callback
+	{
+		override fun onCreateActionMode(actionMode: ActionMode, menu: Menu): Boolean
+		{
+			actionMode.menuInflater.inflate(R.menu.activity_feed_select, menu)
+			return true
+		}
+
+		override fun onPrepareActionMode(actionMode: ActionMode, menu: Menu) = false
+
+		override fun onActionItemClicked(actionMode: ActionMode, menuItem: MenuItem): Boolean
+		{
+			when(menuItem.itemId)
+			{
+				R.id.action_delete -> deleteSelectedItems()
+				else -> return false
+			}
+
+			return true
+		}
+
+		override fun onDestroyActionMode(actionModel: ActionMode)
+		{
+			selectActionMode = null
+
+			selectedItemTitles.clear()
+			recyclerViewAdapter.notifyDataSetChanged()
+		}
+	}
+
+	private fun toggleItemSelection(feedItem: FeedItemWithDownload)
+	{
+		val title = feedItem.feedItem.title
+		if(!selectedItemTitles.contains(title))
+		{
+			if(feedItem.isDownloaded || feedItem.isDownloading)
+				selectedItemTitles.add(title)
+		}
+		else
+			selectedItemTitles.remove(title)
+
+		recyclerViewAdapter.notifyItemChanged(feedItem.feedItem)
+
+		selectActionMode?.title = getString(R.string.feed_item_selection_action_mode_text, selectedItemTitles.size)
+
+		if(selectedItemTitles.isEmpty())
+			selectActionMode?.finish()
+	}
+
+	@RequiresApi(Build.VERSION_CODES.M)
+	private fun deleteSelectedItems()
+	{
+		val allItems = viewModel.feedItems.value ?: return
+		val selectedItems = allItems.filter { item -> selectedItemTitles.contains(item.feedItem.title) }
+
+		val downloadManager = getSystemService(DownloadManager::class.java)
+		for(item in selectedItems)
+			item.deleteDownloadFiles(downloadManager)
+
+		val db = AppDatabase.getInstance(this)
+		db.feedItemDownloadDao().deleteDownloads(selectedItems.map { item -> item.feedItem.link })
+
+		selectActionMode?.finish()
+	}
+
+	private fun itemLongClicked(feedItem: FeedItemWithDownload): Boolean
+	{
+		if(selectActionMode == null)
+			selectActionMode = startSupportActionMode(selectActionModeCallback)
+
+		toggleItemSelection(feedItem)
+
+		return true
+	}
+
+
+	private fun startDownload(feedItem: FeedItemWithDownload)
+	{
+		val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+		val uri = Uri.parse(feedItem.feedItem.link)
+		val request = DownloadManager.Request(uri)
+				.setVisibleInDownloadsUi(false)
+		val download = FeedItemDownload()
+		download.link = feedItem.feedItem.link
+		download.downloadId = downloadManager.enqueue(request)
+		AppDatabase.getInstance(this).feedItemDownloadDao().insert(download)
 	}
 
 	private fun refreshFeed()

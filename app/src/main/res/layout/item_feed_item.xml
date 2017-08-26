@@ -8,7 +8,8 @@
     android:minHeight="64dp"
     android:paddingStart="8dp"
     android:paddingEnd="8dp"
-    android:background="?android:selectableItemBackground">
+    android:foreground="?attr/selectableItemBackground"
+    android:background="@drawable/feed_item_background">
 
     <TextView
         android:id="@+id/title_text_view"

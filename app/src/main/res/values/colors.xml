@@ -6,8 +6,14 @@
 
     <color name="toolbar_foreground">@android:color/white</color>
 
+    <color name="action_mode_background">@android:color/white</color>
+    <color name="action_mode_foreground">@android:color/black</color>
+
     <color name="text_secondary">#9000</color>
     <color name="text_secondary2">#5000</color>
 
     <color name="playback_controller_background">#9000</color>
+
+    <color name="feed_item_background_default">@android:color/white</color>
+    <color name="feed_item_background_selected">#EEEEEE</color>
 </resources>
