@@ -1,7 +1,6 @@
 package com.metallic.tttandroid.model
 
 import android.arch.persistence.room.ColumnInfo
-
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 
@@ -19,4 +18,7 @@ class FeedItemDownload
 
 	@ColumnInfo(name = "lecture_dir")
 	var lectureDir: String? = null
+
+	@ColumnInfo(name = "last_playback_position")
+	var lastPlaybackPosition: Int = 0
 }

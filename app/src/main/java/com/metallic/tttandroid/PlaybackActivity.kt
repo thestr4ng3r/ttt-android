@@ -15,6 +15,7 @@ import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
 import com.metallic.tttandroid.adapter.IndexRecyclerViewAdapter
+import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.ttt.core.Recording
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
 import com.metallic.tttandroid.utils.logError
@@ -130,6 +131,13 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 		window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or
 				View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
 				View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+	}
+
+	override fun onPause()
+	{
+		super.onPause()
+
+		viewModel.saveCurrentPlaybackPosition()
 	}
 
 	private fun animatePlaybackControls(show: Boolean = !playbackControlsDisplayed)

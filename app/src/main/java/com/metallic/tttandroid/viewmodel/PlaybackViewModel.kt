@@ -52,7 +52,7 @@ class PlaybackViewModel(application: Application): AndroidViewModel(application)
 		_audioPlayer = MediaPlayer.create(context, audioUri) ?: return false
 		tttFile = File(tttUri.path)
 
-		recording = Recording(tttFile, audioPlayer)
+		recording = Recording(tttFile, audioPlayer, feedItem.lastPlaybackPosition)
 		_currentIndex.value = recording!!.index.currentIndex
 		recording!!.index.setListener(this)
 		graphicsLiveData = RecordingGraphicsLiveData(recording!!.graphicsContext)
@@ -71,5 +71,11 @@ class PlaybackViewModel(application: Application): AndroidViewModel(application)
 	override fun currentIndexChanged(index: Int)
 	{
 		_currentIndex.postValue(index)
+	}
+
+	fun saveCurrentPlaybackPosition()
+	{
+		val time = recording?.time ?: return
+		AppDatabase.getInstance(getApplication()).feedItemDownloadDao().setLastPlaybackPosition(feedItem.feedItem.link, time)
 	}
 }

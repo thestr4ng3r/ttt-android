@@ -94,7 +94,7 @@ public class Recording extends MessageProducerAdapter implements Runnable
 
 	private Set<Listener> listeners;
 
-	public Recording(File tttFile, final MediaPlayer audioPlayer) throws IOException
+	public Recording(File tttFile, final MediaPlayer audioPlayer, int startTime) throws IOException
 	{
 		listeners = new HashSet<>();
 
@@ -118,7 +118,7 @@ public class Recording extends MessageProducerAdapter implements Runnable
 		//index.initIndexView();
 
 		graphicsContext.enableRefresh(true);
-		setTime(0, true);
+		setTime(startTime, true);
 
 
 		audioPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener()

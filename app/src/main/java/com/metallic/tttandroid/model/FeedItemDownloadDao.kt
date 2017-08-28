@@ -25,6 +25,9 @@ interface FeedItemDownloadDao
 	@Query("UPDATE $tableName SET download_file = null, lecture_dir = :arg1 WHERE download_file = :arg0")
 	fun finishExtract(downloadFile: String, lectureDir: String?)
 
+	@Query("UPDATE $tableName SET last_playback_position = :arg1 WHERE link = :arg0")
+	fun setLastPlaybackPosition(link: String, position: Int)
+
 	@Query("SELECT * FROM feed_item JOIN feed_item_download ON feed_item.link = feed_item_download.link WHERE download_id = :arg0")
 	fun feedItemForDownloadId(downloadId: Long): FeedItem?
 

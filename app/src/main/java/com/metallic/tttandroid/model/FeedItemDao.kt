@@ -19,6 +19,9 @@ class FeedItemWithDownload
 	@ColumnInfo(name = "lecture_dir")
 	var lectureDir: String? = null
 
+	@ColumnInfo(name = "last_playback_position")
+	var lastPlaybackPosition: Int = 0
+
 	val isDownloaded get() = lectureDir != null
 	val isDownloading get() = !isDownloaded && (downloadId != null || downloadFile != null)
 	val isExtracting get() = !isDownloaded && downloadFile != null
@@ -33,7 +36,8 @@ private const val feedItemWithDownloadQuery = "SELECT " +
 		"feed_item.file_size AS feed_item_file_size, " +
 		"feed_item_download.download_id AS download_id, " +
 		"feed_item_download.download_file AS download_file, " +
-		"feed_item_download.lecture_dir AS lecture_dir " +
+		"feed_item_download.lecture_dir AS lecture_dir, " +
+		"feed_item_download.last_playback_position AS last_playback_position " +
 		"FROM $tableName LEFT OUTER JOIN feed_item_download ON $tableName.link = feed_item_download.link"
 
 @Dao
