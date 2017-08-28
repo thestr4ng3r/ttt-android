@@ -53,7 +53,10 @@ interface FeedItemDao
 	fun getByFeedId(id: Long): LiveData<List<FeedItem>>
 
 	@Query("$feedItemWithDownloadQuery WHERE feed_id = :arg0 ORDER BY date")
-	fun getByFeedIdWithDownloads(id: Long): LiveData<List<FeedItemWithDownload>>
+	fun getLiveDataByFeedIdWithDownloads(id: Long): LiveData<List<FeedItemWithDownload>>
+
+	@Query("$feedItemWithDownloadQuery WHERE feed_id = :arg0 ORDER BY date")
+	fun getByFeedIdWithDownloads(id: Long): List<FeedItemWithDownload>
 
 	@Query("$feedItemWithDownloadQuery WHERE feed_id = :arg0 AND title = :arg1 ORDER BY date")
 	fun getSingleWithDownloads(feedId: Long, title: String): FeedItemWithDownload?

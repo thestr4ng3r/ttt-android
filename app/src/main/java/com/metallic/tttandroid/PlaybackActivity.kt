@@ -1,8 +1,10 @@
 package com.metallic.tttandroid
 
 import android.animation.LayoutTransition
+import android.app.AlertDialog
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.DialogInterface
 import android.opengl.Visibility
 import android.os.Bundle
 import android.os.Handler
@@ -58,6 +60,8 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_playback)
 
+		hidePlaybackControlsHandler = Handler()
+
 		val feedId = intent.getLongExtra(EXTRA_FEED_ID, -1)
 		val feedItemTitle = intent.getStringExtra(EXTRA_FEED_ITEM_TITLE)
 
@@ -65,7 +69,13 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 		if(!viewModel.initialize(feedId, feedItemTitle))
 		{
 			logError("Failed to initialize Playback")
-			finish()
+			AlertDialog.Builder(this)
+					.setMessage(R.string.alert_message_playback_failed)
+					.setPositiveButton(R.string.alert_message_playback_failed_dismiss, { _, _ ->
+						finish()
+					})
+					.create()
+					.show()
 			return
 		}
 
@@ -94,8 +104,6 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 		updatePlayButton(viewModel.recording?.isPlaying)
 		updatePositionTextView(viewModel.recording?.time)
 		updateDurationTextView(viewModel.recording?.duration)
-
-		hidePlaybackControlsHandler = Handler()
 
 		imageView.setOnClickListener { animatePlaybackControls() }
 		playbackControlsView.setOnClickListener { animatePlaybackControls(true) }

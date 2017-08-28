@@ -39,4 +39,7 @@ interface FeedItemDownloadDao
 
 	@Delete
 	fun delete(feed: FeedItemDownload)
+
+	@Query("DELETE FROM $tableName WHERE link IN(:arg0)")
+	fun deleteByLinks(links: List<String>)
 }

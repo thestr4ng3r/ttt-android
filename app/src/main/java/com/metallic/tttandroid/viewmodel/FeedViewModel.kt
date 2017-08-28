@@ -4,10 +4,8 @@ import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
-import android.os.Handler
 import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.model.Feed
-import com.metallic.tttandroid.model.FeedItem
 import com.metallic.tttandroid.model.FeedItemWithDownload
 import com.metallic.tttandroid.request.FeedResponse
 import com.metallic.tttandroid.request.enqueueFeed
@@ -36,7 +34,7 @@ class FeedViewModel(application: Application): AndroidViewModel(application)
 		val db = AppDatabase.getInstance(getApplication())
 
 		_feed = db.feedDao().getById(feedId)
-		feedItems = db.feedItemDao().getByFeedIdWithDownloads(feed.id)
+		feedItems = db.feedItemDao().getLiveDataByFeedIdWithDownloads(feed.id)
 
 		refreshFeed()
 	}

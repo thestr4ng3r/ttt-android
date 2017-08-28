@@ -18,10 +18,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
 import com.metallic.tttandroid.adapter.FeedRecyclerViewAdapter
-import com.metallic.tttandroid.model.AppDatabase
-import com.metallic.tttandroid.model.FeedItemDownload
-import com.metallic.tttandroid.model.FeedItemWithDownload
-import com.metallic.tttandroid.model.deleteDownloadFiles
+import com.metallic.tttandroid.model.*
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
 import com.metallic.tttandroid.viewmodel.FeedViewModel
 import kotlinx.android.synthetic.main.activity_feed.*
@@ -246,6 +243,7 @@ class FeedActivity: LifecycleAppCompatActivity()
 		return true
 	}
 
+	@RequiresApi(Build.VERSION_CODES.M)
 	override fun onOptionsItemSelected(item: MenuItem): Boolean
 	{
 		when(item.itemId)
@@ -271,7 +269,7 @@ class FeedActivity: LifecycleAppCompatActivity()
 				AlertDialog.Builder(this)
 						.setMessage(getString(R.string.dialog_delete_feed_message, viewModel.feed.name))
 						.setPositiveButton(R.string.dialog_delete_positive, { _, _ ->
-							AppDatabase.getInstance(this).feedDao().delete(viewModel.feed)
+							viewModel.feed.cleanupAndDelete(this)
 							finish()
 						})
 						.setNegativeButton(R.string.dialog_delete_negative, null)

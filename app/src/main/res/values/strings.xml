@@ -45,4 +45,7 @@
     <string name="content_description_index_button">Show/Hide Index</string>
     <string name="content_description_skip_previous_button">Skip to previous slide</string>
     <string name="content_description_skip_next_button">Skip to next slide</string>
+
+    <string name="alert_message_playback_failed">Failed to start playback. You may want to try to re-download the recording.</string>
+    <string name="alert_message_playback_failed_dismiss">Dismiss</string>
 </resources>
