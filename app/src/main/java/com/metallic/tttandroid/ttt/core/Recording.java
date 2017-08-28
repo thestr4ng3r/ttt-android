@@ -63,7 +63,7 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	private final MediaPlayer audioPlayer;
 
 	private final Messages messages;
-	//private final Index index;
+	private final Index index;
 	private File tttFile;
 
 	public Messages getMessages()
@@ -73,7 +73,7 @@ public class Recording extends MessageProducerAdapter implements Runnable
 
 	public Index getIndex()
 	{
-		return null;
+		return index;
 	}
 
 	public GraphicsContext getGraphicsContext()
@@ -103,19 +103,19 @@ public class Recording extends MessageProducerAdapter implements Runnable
 		messages = new Messages(this);
 		prefs = new ProtocolPreferences();
 		this.audioPlayer = audioPlayer;
-		//index = new Index(this, scrollView, context);
+		index = new Index(this);
 
 		// read messages + extensions
 		read(this.tttFile);
 
 		graphicsContext = new GraphicsContext(this);
 		// compute Index if not available in extensions
-		/*if (!index.isValid())
+		if (!index.isValid())
 			index.computeIndex();
 		index.extractAnnotations();
 		if (!index.thumbnailsAvailable())
 			index.createScreenshots();
-		index.initIndexView();*/
+		//index.initIndexView();
 
 		graphicsContext.enableRefresh(true);
 		setTime(0, true);
@@ -298,7 +298,7 @@ public class Recording extends MessageProducerAdapter implements Runnable
 					// .println("\n-----------------------------------------------\nReading Index Table\n");
 					try
 					{
-						// TODO index.readIndexExtension(ext_in);
+						index.readIndexExtension(ext_in);
 					}
 					catch (Exception e)
 					{
@@ -316,8 +316,8 @@ public class Recording extends MessageProducerAdapter implements Runnable
 
 					try
 					{
-						// TODO SearchbaseExtension.readSearchbaseExtension(ext_in, index);
-						// extensions.remove(i);
+						SearchbaseExtension.readSearchbaseExtension(ext_in, index);
+						extensions.remove(i);
 					}
 					catch (Exception e) {
 						System.out
@@ -411,7 +411,7 @@ public class Recording extends MessageProducerAdapter implements Runnable
 						deliverMessage(message);
 
 						// update index viewer
-						//index.updateRunningIndex(message.getTimestamp());
+						index.updateRunningIndex(message.getTimestamp());
 
 						// increase message counter
 						next_message++;
@@ -438,7 +438,7 @@ public class Recording extends MessageProducerAdapter implements Runnable
 
 	public void highlightSearchResults(Canvas canvas)
 	{
-		// TODO index.highlightSearchResultsOfCurrentIndex(canvas);
+		index.highlightSearchResultsOfCurrentIndex(canvas);
 	}
 
 	/*******************************************************************************************************************
@@ -488,14 +488,14 @@ public class Recording extends MessageProducerAdapter implements Runnable
 	// set playback to next index
 	synchronized public void next()
 	{
-		// TODO setTime(index.getNextIndex().getTimestamp(), true);
+		setTime(index.getNextIndex().getTimestamp(), true);
 	}
 
 
 	// set playback to previous index
 	synchronized public void previous()
 	{
-		// TODO setTime(index.getPreviousIndex().getTimestamp(), true);
+		setTime(index.getPreviousIndex().getTimestamp(), true);
 	}
 
 	synchronized public void stop()
@@ -524,8 +524,8 @@ public class Recording extends MessageProducerAdapter implements Runnable
 		messages.setTime_full_frame_check(time);
 		if (refresh) {
 
-			// focusCurrentIndexEntry(time);
-			//index.setCorrespondingIndex(time);
+			//focusCurrentIndexEntry(time);
+			index.setCorrespondingIndex(time);
 			setAudioPlayerTime(time);
 			graphicsContext.updateImage();
 		}

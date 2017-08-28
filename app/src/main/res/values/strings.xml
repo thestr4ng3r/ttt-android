@@ -39,4 +39,7 @@
 
     <string name="notification_download_finished_title">%s downloaded.</string>
     <string name="notification_download_finished_text">Successfully downloaded lecture.</string>
+
+    <string name="content_description_play_button">Play/Pause</string>
+    <string name="content_description_index_button">Show/Hide Index</string>
 </resources>

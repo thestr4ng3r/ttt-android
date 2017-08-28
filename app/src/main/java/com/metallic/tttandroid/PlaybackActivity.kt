@@ -4,11 +4,15 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.os.Handler
+import android.support.v7.widget.DividerItemDecoration
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
+import com.metallic.tttandroid.adapter.IndexRecyclerViewAdapter
 import com.metallic.tttandroid.ttt.core.Recording
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
 import com.metallic.tttandroid.utils.logError
@@ -34,12 +38,17 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 	private lateinit var durationTextView: TextView
 	private lateinit var positionTextView: TextView
 
+	private lateinit var indexRecyclerView: RecyclerView
+	private lateinit var indexRecyclerViewAdapter: IndexRecyclerViewAdapter
+
 	private lateinit var updateHandler: Handler
 
 	private var currentPositionSeconds = 0
 
 	private var playbackControlsDisplayed = true
 	private lateinit var hidePlaybackControlsHandler: Handler
+
+	private var indexDisplayed = false
 
 	override fun onCreate(savedInstanceState: Bundle?)
 	{
@@ -93,6 +102,19 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 		playbackControlsView.setOnClickListener { animatePlaybackControls(true) }
 
 		animatePlaybackControls(true)
+
+
+		indexRecyclerView = index_recycler_view
+		val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+		indexRecyclerView.layoutManager = layoutManager
+		val dividerItemDecoration = DividerItemDecoration(this, layoutManager.orientation)
+		indexRecyclerView.addItemDecoration(dividerItemDecoration)
+
+		indexRecyclerViewAdapter = IndexRecyclerViewAdapter()
+		indexRecyclerViewAdapter.recording = viewModel.recording
+		indexRecyclerView.adapter = indexRecyclerViewAdapter
+
+		toggle_index_button.setOnClickListener { animateIndex() }
 	}
 
 	private fun animatePlaybackControls(show: Boolean = !playbackControlsDisplayed)
@@ -114,6 +136,33 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 
 		if(playbackControlsDisplayed)
 			schedulePlaybackControlsHiding()
+	}
+
+	private fun animateIndex(show: Boolean = !indexDisplayed)
+	{
+		val fullDuration = resources.getInteger(R.integer.index_sidebar_anim_duration).toLong()
+		val targetScale = if(show) 1.0f else 0.0f
+		val currentScale = indexRecyclerView.scaleX
+		val duration = (fullDuration * Math.abs(targetScale - currentScale)).toLong()
+
+		if(duration > 0L)
+		{
+			if(show)
+				indexRecyclerView.visibility = View.VISIBLE
+
+			val animation = indexRecyclerView.animate()
+					.scaleX(targetScale)
+					.setDuration(duration)
+
+			if(!show)
+				animation.withEndAction {
+					indexRecyclerView.visibility = View.GONE
+				}
+
+			animation.start()
+
+			indexDisplayed = show
+		}
 	}
 
 	private val hidePlaybackControlsCallback = Runnable {

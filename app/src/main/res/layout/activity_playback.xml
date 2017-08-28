@@ -7,12 +7,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@android:color/black">
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/index_recycler_view"
+        android:layout_width="@dimen/index_sidebar_width"
+        android:layout_height="0dp"
+        android:background="@android:color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:scaleX="0"
+        android:visibility="gone"
+        tools:scaleX="1"
+        tools:visibility="visible"/>
+
     <ImageView
         android:id="@+id/playback_image_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:scaleType="fitCenter"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/index_recycler_view"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -21,14 +34,14 @@
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/playback_controls_view"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"
         android:background="@color/playback_controller_background"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/playback_image_view"
+        app:layout_constraintLeft_toLeftOf="@id/playback_image_view"
+        app:layout_constraintRight_toRightOf="@id/playback_image_view"
         android:padding="8dp">
 
         <TextView
@@ -74,7 +87,21 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:background="@drawable/play_button_background"
-            android:src="@drawable/ic_play_arrow_white_24dp" />
+            android:src="@drawable/ic_play_arrow_white_24dp"
+            android:contentDescription="@string/content_description_play_button" />
+
+
+        <ImageButton
+            android:id="@+id/toggle_index_button"
+            android:layout_width="@dimen/playback_extra_button_size"
+            android:layout_height="@dimen/playback_extra_button_size"
+            app:layout_constraintTop_toBottomOf="@id/progress_seek_bar"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0.5"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_view_list_white_24dp"
+            android:contentDescription="@string/content_description_index_button" />
 
 
     </android.support.constraint.ConstraintLayout>

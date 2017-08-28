@@ -28,7 +28,7 @@ import com.metallic.tttandroid.ttt.utils.BitmapContainer;
  * 
  */
 @SuppressLint({ "DefaultLocale", "ViewConstructor" })
-public class IndexEntry extends ImageButton {
+public class IndexEntry {
 	private final int timestamp;
 	private final Index index;
 	private BitmapContainer bitmapContainer;
@@ -42,40 +42,29 @@ public class IndexEntry extends ImageButton {
 
 	private boolean hasThumbnail = false;
 
-	public IndexEntry(Context context, final Index index, String title,
+	public IndexEntry(final Index index, String title,
 			int timestamp, String searchableText) {
-		super(context);
 		this.index = index;
 		this.timestamp = timestamp;
 		this.title = title;
 		this.searchbase_of_page = searchableText;
 
-		this.setBackgroundColor(Color.LTGRAY);
-
-		this.setLayoutParams(new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT,
-				LinearLayout.LayoutParams.WRAP_CONTENT));
-		setScaleType(ScaleType.CENTER_INSIDE);
-
-		// needed to get correct height
-		this.setAdjustViewBounds(true);
-
-		this.setOnClickListener(new OnClickListener() {
+		/*this.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				index.getRecording().setTime(IndexEntry.this.timestamp, true);
 
 			}
-		});
+		});*/
 	}
 
-	public IndexEntry(Context context, Index index) {
-		this(context, index, "", 0, null);
+	public IndexEntry(Index index) {
+		this(index, "", 0, null);
 	}
 
-	public IndexEntry(Context context, Index index, int timestamp) {
-		this(context, index, "", timestamp, null);
+	public IndexEntry(Index index, int timestamp) {
+		this(index, "", timestamp, null);
 	}
 
 	public int getTimestamp() {
@@ -95,9 +84,7 @@ public class IndexEntry extends ImageButton {
 			hasThumbnail = true;
 		}
 
-		setImageBitmap(bitmapContainer.getBitmap());
 		updateThumbail();
-
 	}
 
 	/**
@@ -109,8 +96,12 @@ public class IndexEntry extends ImageButton {
 		Canvas canvas = new Canvas(bitmap);
 		highlightSearchResults(canvas);
 		paintAnnotationsToThumbnail(canvas);
-		invalidate();
 
+		//invalidate();
+	}
+
+	public Bitmap getBitmap() {
+		return bitmapContainer.getBitmap();
 	}
 
 	public void setAnnotations(ArrayList<Annotation> annotations) {

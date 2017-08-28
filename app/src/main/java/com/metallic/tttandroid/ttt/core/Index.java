@@ -32,11 +32,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -71,10 +66,7 @@ public class Index {
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	private Recording recording;
-	private final Context context;
-	private final ScrollView indexViewer;
 	private final Handler scrollHandler;
-	public int scrollPos;
 	int getWidth() {
 		return recording.getProtocolPreferences().framebufferWidth;
 	}
@@ -83,11 +75,9 @@ public class Index {
 		return recording;
 	}
 
-	public Index(Recording recording, ScrollView scrollView, Context context) {
+	public Index(Recording recording) {
 		this.recording = recording;
-		this.context = context;
-		this.indexViewer = scrollView;
-		index.add(new IndexEntry(context, this));
+		index.add(new IndexEntry(this));
 		scrollHandler = new Handler(Looper.getMainLooper()) {
 			@Override
 			public void handleMessage(android.os.Message inputMessage) {
@@ -95,12 +85,11 @@ public class Index {
 				int indexNumber = inputMessage.arg1;
 				int color = inputMessage.arg2;
 				IndexEntry entry = get(indexNumber - 1);
-				entry.setBackgroundColor(color);
+				/*entry.setBackgroundColor(color);
 				LinearLayout parent = (LinearLayout) entry.getParent();
 				scrollPos=parent.getTop() - parent.getHeight()
 						/ 2;
-				indexViewer.scrollTo(0, scrollPos);
-
+				indexViewer.scrollTo(0, scrollPos);*/
 			}
 		};
 	}
@@ -192,12 +181,10 @@ public class Index {
 						// no animation, take last message of sequence
 						// (animations take first message of sequence as index)
 						if (index.size() > 0)
-							index.set(index.size() - 1, new IndexEntry(context,
-									this, previous_timestamp));
+							index.set(index.size() - 1, new IndexEntry(this, previous_timestamp));
 						else
 							// first index
-							index.add(new IndexEntry(context, this,
-									previous_timestamp));
+							index.add(new IndexEntry(this, previous_timestamp));
 
 						// if (TTT.verbose)
 						// System.out.print(" RESET");
@@ -207,8 +194,7 @@ public class Index {
 
 					if (true)
 
-						index.add(new IndexEntry(context, this, message
-								.getTimestamp()));
+						index.add(new IndexEntry(this, message.getTimestamp()));
 				} else {
 					// distinguish animations from multiple slide changes
 					animationCount++;
@@ -227,8 +213,7 @@ public class Index {
 				&& previous_timestamp >= 0 && index.size() > 0) {
 			// no animation, take last message of sequence
 			// (animations take first message of sequence as index)
-			index.set(index.size() - 1, new IndexEntry(context, this,
-					previous_timestamp));
+			index.set(index.size() - 1, new IndexEntry(this, previous_timestamp));
 			if (true)
 				System.out.print(" RESET");
 		}
@@ -245,7 +230,7 @@ public class Index {
 
 		// add index at beginning if needed
 		if (index.size() == 0 || index.get(0).getTimestamp() > 2000) {
-			index.add(0, new IndexEntry(context, this, 0));
+			index.add(0, new IndexEntry(this, 0));
 		}
 
 	}
@@ -291,15 +276,14 @@ public class Index {
 			readThumbnail(in);
 
 			// add index entry
-			index.add(new IndexEntry(context, this, title, timestamp,
-					searchable));
+			index.add(new IndexEntry(this, title, timestamp, searchable));
 
 		}
 
 		// check if valid
 		valid = index.size() > 0;
 		if (!valid)
-			index.add(new IndexEntry(context, this));
+			index.add(new IndexEntry(this));
 	}
 
 	private void readThumbnail(DataInputStream in) throws IOException {
@@ -463,53 +447,6 @@ public class Index {
 		return isCanceled == false;
 	}
 
-	// //////////////////////////////////////////////////////////////////
-	// Index View
-	// //////////////////////////////////////////////////////////////////
-
-	/**
-	 * adds the index entries to the scrollview
-	 */
-	public void initIndexView() {
-
-		// needed because scrollview can only have one direct child
-		LinearLayout layout = new LinearLayout(context);
-		layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
-				LayoutParams.WRAP_CONTENT));
-		layout.setOrientation(LinearLayout.VERTICAL);
-		layout.setBackgroundColor(Color.WHITE);
-
-		int length = size();
-
-		for (int i = 0; i < length; i++) {
-			IndexEntry entry = index.get(i);
-			layout.addView(addTitle(i));
-			layout.addView(insertEntry(entry));
-		}
-
-		indexViewer.addView(layout);
-
-	}
-
-	public View insertEntry(IndexEntry entry) {
-
-		LinearLayout layout = new LinearLayout(context);
-		layout.setBackgroundColor(Color.WHITE);
-		layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
-				LayoutParams.WRAP_CONTENT));
-		layout.setGravity(Gravity.CENTER);
-
-		layout.addView(entry);
-		return layout;
-	}
-
-	View addTitle(int number) {
-		TextView title = new TextView(context);
-		title.setText(String.valueOf(number + 1));
-		title.setTextAppearance(context, android.R.style.TextAppearance_Large);
-		title.setTextColor(Color.BLACK);
-		return title;
-	}
 
 	// //////////////////////////////////////////////////////////////////
 	// controlling
