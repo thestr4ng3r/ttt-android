@@ -3,17 +3,19 @@ package com.metallic.tttandroid.viewmodel
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import com.metallic.tttandroid.model.AppDatabase
 import com.metallic.tttandroid.model.FeedItemWithDownload
 import com.metallic.tttandroid.ttt.RecordingGraphicsLiveData
+import com.metallic.tttandroid.ttt.core.Index
 import com.metallic.tttandroid.ttt.core.Recording
 import kotlinx.android.synthetic.main.activity_playback.*
 import java.io.File
 
-class PlaybackViewModel(application: Application): AndroidViewModel(application)
+class PlaybackViewModel(application: Application): AndroidViewModel(application), Index.Listener
 {
 	private var _feedItem: FeedItemWithDownload? = null
 	val feedItem: FeedItemWithDownload get() = _feedItem!!
@@ -25,6 +27,9 @@ class PlaybackViewModel(application: Application): AndroidViewModel(application)
 
 	var recording: Recording? = null
 		private set
+
+	private val _currentIndex = MutableLiveData<Int>()
+	val currentIndex: LiveData<Int> get() = _currentIndex
 
 	lateinit var graphicsLiveData: RecordingGraphicsLiveData
 
@@ -48,6 +53,8 @@ class PlaybackViewModel(application: Application): AndroidViewModel(application)
 		tttFile = File(tttUri.path)
 
 		recording = Recording(tttFile, audioPlayer)
+		_currentIndex.value = recording!!.index.currentIndex
+		recording!!.index.setListener(this)
 		graphicsLiveData = RecordingGraphicsLiveData(recording!!.graphicsContext)
 		recording!!.play()
 
@@ -59,5 +66,10 @@ class PlaybackViewModel(application: Application): AndroidViewModel(application)
 		super.onCleared()
 		recording?.close()
 		_audioPlayer?.release()
+	}
+
+	override fun currentIndexChanged(index: Int)
+	{
+		_currentIndex.postValue(index)
 	}
 }

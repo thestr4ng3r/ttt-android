@@ -48,12 +48,12 @@ import android.widget.ScrollView;
  * main class for controlling the replay of an lecture. It is parsing the
  * recording file. the resulting information are messages, the protocol
  * preferences, the index with all index entries. After that, it initialize the
- * index Viewer. This class also contains the main loop for the replay. Methods
+ * index. This class also contains the main loop for the replay. Methods
  * that are adopted from TTT will be marked with "(TTT)".
  * 
  * 
  * 
- * @author Thomas Krex
+ * @author Thomas Krex, Florian Märkl
  * 
  */
 public class Recording extends MessageProducerAdapter implements Runnable

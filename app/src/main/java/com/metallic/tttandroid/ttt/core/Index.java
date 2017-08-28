@@ -24,14 +24,9 @@
  */
 package com.metallic.tttandroid.ttt.core;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.view.Gravity;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -45,11 +40,10 @@ import com.metallic.tttandroid.ttt.messages.annotations.DeleteAllAnnotation;
 
 /**
  * class for handling index of the recording,consist of all index entries.
- * handles updating the running index, initialize scrollview and handles the
- * focusing of the current indexEntry. Adopted parts from TTT will be marked
- * with (TTT)
+ * handles updating the running index, displaying views is not handled here.
+ * Adopted parts from TTT will be marked with (TTT)
  *
- * @author Thomas Krex
+ * @author Thomas Krex, Florian Märkl
  *
  */
 public class Index {
@@ -58,15 +52,13 @@ public class Index {
 	final public static int ASCII_SEARCHBASE = 1;
 	final public static int XML_SEARCHBASE = 2;
 
-	public ArrayList<IndexEntry> index = new ArrayList<IndexEntry>();
+	private ArrayList<IndexEntry> index = new ArrayList<IndexEntry>();
 	ArrayList<IndexEntry> search_index = new ArrayList<IndexEntry>();
 
-	// //////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// constructors
-	// //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	private Recording recording;
-	private final Handler scrollHandler;
+
+	private Listener listener = null;
+
 	int getWidth() {
 		return recording.getProtocolPreferences().framebufferWidth;
 	}
@@ -78,20 +70,6 @@ public class Index {
 	public Index(Recording recording) {
 		this.recording = recording;
 		index.add(new IndexEntry(this));
-		scrollHandler = new Handler(Looper.getMainLooper()) {
-			@Override
-			public void handleMessage(android.os.Message inputMessage) {
-				// Gets the image task from the incoming Message object.
-				int indexNumber = inputMessage.arg1;
-				int color = inputMessage.arg2;
-				IndexEntry entry = get(indexNumber - 1);
-				/*entry.setBackgroundColor(color);
-				LinearLayout parent = (LinearLayout) entry.getParent();
-				scrollPos=parent.getTop() - parent.getHeight()
-						/ 2;
-				indexViewer.scrollTo(0, scrollPos);*/
-			}
-		};
 	}
 
 	public void close() {
@@ -270,7 +248,7 @@ public class Index {
 			byte[] searchableArray = new byte[searchableLength];
 			in.readFully(searchableArray);
 			String searchable = new String(searchableArray);
-			// TODO android workarround
+			// TODO android workaround
 
 			// BufferedImage image = readThumbnail(in);
 			readThumbnail(in);
@@ -454,8 +432,12 @@ public class Index {
 
 	private int nowPlayingIndex_startingAtZero;
 
-	synchronized public IndexEntry getCurrentIndex() {
-		return index.get(nowPlayingIndex_startingAtZero);
+	synchronized public int getCurrentIndex() {
+		return nowPlayingIndex_startingAtZero;
+	}
+
+	public IndexEntry getCurrentIndexEntry() {
+		return index.get(getCurrentIndex());
 	}
 
 	/**
@@ -490,7 +472,7 @@ public class Index {
 
 		// set index
 		nowPlayingIndex_startingAtZero = i;
-		fireIndexChangedEvent(nowPlayingIndex_startingAtZero + 1);
+		fireIndexChangedEvent(nowPlayingIndex_startingAtZero);
 	}
 
 	public IndexEntry get(int i) {
@@ -543,7 +525,7 @@ public class Index {
 				nowPlayingIndex_startingAtZero = i;
 
 				// fire event (index event starting at one)
-				fireIndexChangedEvent(nowPlayingIndex_startingAtZero + 1);
+				fireIndexChangedEvent(nowPlayingIndex_startingAtZero);
 
 				break;
 			}
@@ -566,22 +548,12 @@ public class Index {
 	 *            number of the new current index
 	 */
 	public void fireIndexChangedEvent(int indexNumber) {
-		if (lastIndexFired != indexNumber) {
-			Log.d("Index Update","index number: "+indexNumber);
-			// highlighting of index entry and scrolling has to be done in ui
-			// thread
-			if (lastIndexFired > 0) {
-				android.os.Message unMarkMessage = scrollHandler.obtainMessage(
-						0, lastIndexFired, Color.LTGRAY);
-				unMarkMessage.sendToTarget();
-			}
+		if (lastIndexFired == indexNumber || listener == null)
+			return;
 
-			lastIndexFired = indexNumber;
-			android.os.Message markMessage = scrollHandler.obtainMessage(0,
-					indexNumber, Color.RED);
-			markMessage.sendToTarget();
-
-		}
+		Log.d("Index Update","index number: "+indexNumber);
+		listener.currentIndexChanged(indexNumber);
+		lastIndexFired = indexNumber;
 	}
 
 	// //////////////////////////////////////////////////////////////////
@@ -643,7 +615,7 @@ public class Index {
 	 *            canvas to paint on the main Bitmap
 	 */
 	public void highlightSearchResultsOfCurrentIndex(Canvas canvas) {
-		getCurrentIndex().highlightSearchResults(canvas);
+		getCurrentIndexEntry().highlightSearchResults(canvas);
 	}
 
 	/**
@@ -655,5 +627,17 @@ public class Index {
 			index.get(i).updateThumbail();
 
 		}
+	}
+
+	public ArrayList<IndexEntry> getIndex() {
+		return index;
+	}
+
+	public void setListener(Listener listener) {
+		this.listener = listener;
+	}
+
+	public interface Listener {
+		void currentIndexChanged(int index);
 	}
 }

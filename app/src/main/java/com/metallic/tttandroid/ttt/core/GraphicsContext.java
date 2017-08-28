@@ -349,6 +349,10 @@ public class GraphicsContext implements MessageConsumer {
 		});
 	}
 
+	public Bitmap getBitmap() {
+		return bitmapContainer.getBitmap();
+	}
+
 	public interface Listener
 	{
 		void imageChanged(Bitmap frame);

@@ -42,4 +42,6 @@
 
     <string name="content_description_play_button">Play/Pause</string>
     <string name="content_description_index_button">Show/Hide Index</string>
+    <string name="content_description_skip_previous_button">Skip to previous slide</string>
+    <string name="content_description_skip_next_button">Skip to next slide</string>
 </resources>

@@ -2,8 +2,7 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
 
-    <dimen name="play_button_size">48dp</dimen>
-    <dimen name="playback_extra_button_size">40dp</dimen>
+    <dimen name="playback_button_size">40dp</dimen>
 
     <dimen name="index_sidebar_width">192dp</dimen>
 </resources>

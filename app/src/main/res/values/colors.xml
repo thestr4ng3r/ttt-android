@@ -16,4 +16,7 @@
 
     <color name="feed_item_background_default">@android:color/white</color>
     <color name="feed_item_background_selected">#EEEEEE</color>
+
+    <color name="index_entry_background_default">@android:color/white</color>
+    <color name="index_entry_background_current">@android:color/darker_gray</color>
 </resources>

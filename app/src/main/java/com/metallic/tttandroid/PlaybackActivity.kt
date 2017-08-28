@@ -1,7 +1,9 @@
 package com.metallic.tttandroid
 
+import android.animation.LayoutTransition
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.opengl.Visibility
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.widget.DividerItemDecoration
@@ -54,10 +56,6 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 	{
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_playback)
-
-		window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or
-				View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-				View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
 
 		val feedId = intent.getLongExtra(EXTRA_FEED_ID, -1)
 		val feedItemTitle = intent.getStringExtra(EXTRA_FEED_ITEM_TITLE)
@@ -113,56 +111,40 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 		indexRecyclerViewAdapter = IndexRecyclerViewAdapter()
 		indexRecyclerViewAdapter.recording = viewModel.recording
 		indexRecyclerView.adapter = indexRecyclerViewAdapter
+		indexRecyclerViewAdapter.itemOnClickCallback = { indexEntry ->
+			viewModel.recording?.setTime(indexEntry.timestamp, true)
+			animatePlaybackControls(true)
+		}
 
-		toggle_index_button.setOnClickListener { animateIndex() }
+		toggle_index_button.setOnClickListener { setIndexVisibility() }
+		skip_previous_button.setOnClickListener { viewModel.recording?.previous() }
+		skip_next_button.setOnClickListener { viewModel.recording?.next() }
+
+		viewModel.currentIndex.observe(this, Observer { currentIndex -> indexRecyclerViewAdapter.currentIndex = currentIndex })
+	}
+
+	override fun onResume()
+	{
+		super.onResume()
+
+		window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or
+				View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+				View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
 	}
 
 	private fun animatePlaybackControls(show: Boolean = !playbackControlsDisplayed)
 	{
-		val fullDuration = resources.getInteger(R.integer.playback_controls_anim_duration).toLong()
-		val targetAlpha = if(show) 1.0f else 0.0f
-		val currentAlpha = playbackControlsView.alpha
-		val duration = (fullDuration * Math.abs(targetAlpha - currentAlpha)).toLong()
+		playbackControlsView.visibility = if(show) View.VISIBLE else View.GONE
+		playbackControlsDisplayed = show
 
-		if(duration > 0L)
-		{
-			playbackControlsView.animate()
-					.alpha(targetAlpha)
-					.setDuration(duration)
-					.start()
-
-			playbackControlsDisplayed = show
-		}
-
-		if(playbackControlsDisplayed)
+		if(show)
 			schedulePlaybackControlsHiding()
 	}
 
-	private fun animateIndex(show: Boolean = !indexDisplayed)
+	private fun setIndexVisibility(show: Boolean = !indexDisplayed)
 	{
-		val fullDuration = resources.getInteger(R.integer.index_sidebar_anim_duration).toLong()
-		val targetScale = if(show) 1.0f else 0.0f
-		val currentScale = indexRecyclerView.scaleX
-		val duration = (fullDuration * Math.abs(targetScale - currentScale)).toLong()
-
-		if(duration > 0L)
-		{
-			if(show)
-				indexRecyclerView.visibility = View.VISIBLE
-
-			val animation = indexRecyclerView.animate()
-					.scaleX(targetScale)
-					.setDuration(duration)
-
-			if(!show)
-				animation.withEndAction {
-					indexRecyclerView.visibility = View.GONE
-				}
-
-			animation.start()
-
-			indexDisplayed = show
-		}
+		indexRecyclerView.visibility = if(show) View.VISIBLE else View.GONE
+		indexDisplayed = show
 	}
 
 	private val hidePlaybackControlsCallback = Runnable {

@@ -6,6 +6,11 @@ import com.metallic.tttandroid.ttt.core.GraphicsContext
 
 class RecordingGraphicsLiveData(val graphicsContext: GraphicsContext): LiveData<Bitmap>()
 {
+	init
+	{
+		value = graphicsContext.bitmap
+	}
+
 	val graphicsContextListener = GraphicsContext.Listener { bitmap ->
 		postValue(bitmap)
 	}
