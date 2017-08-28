@@ -22,6 +22,7 @@
     <string name="action_refresh_feed">Refresh</string>
     <string name="action_edit_feed">Edit</string>
     <string name="action_delete_feed">Delete</string>
+    <string name="action_reverse_order">Reverse order</string>
 
     <string name="feed_item_subtitle_downloading">Downloading…</string>
     <string name="feed_item_subtitle_download_paused">Download paused</string>

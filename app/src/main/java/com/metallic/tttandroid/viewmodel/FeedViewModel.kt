@@ -26,6 +26,8 @@ class FeedViewModel(application: Application): AndroidViewModel(application)
 
 	val isRefreshing: Boolean get() = (call != null)
 
+	var reverseListOrder = true
+
 	fun initialize(feedId: Long)
 	{
 		if(_feed != null)

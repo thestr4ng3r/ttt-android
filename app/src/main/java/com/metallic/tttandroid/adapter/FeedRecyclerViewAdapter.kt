@@ -17,6 +17,13 @@ class FeedRecyclerViewAdapter : RecyclerView.Adapter<FeedRecyclerViewAdapter.Vie
 {
 	private val DATE_FORMAT_DATE = DateFormat.getDateInstance()!!
 
+	var reverseOrder = false
+		set(value)
+		{
+			field = value
+			notifyDataSetChanged()
+		}
+
 	var items: List<FeedItemWithDownload>? = null
 		set(value)
 		{
@@ -45,10 +52,12 @@ class FeedRecyclerViewAdapter : RecyclerView.Adapter<FeedRecyclerViewAdapter.Vie
 	@RequiresApi(Build.VERSION_CODES.M)
 	override fun onBindViewHolder(holder: ViewHolder, position: Int)
 	{
-		val item = items?.get(position) ?: return
+		val itemPosition = if(reverseOrder) itemCount - position - 1 else position
+		val item = items?.get(itemPosition) ?: return
 
 		val context = holder.itemView.context
 
+		holder.numberTextView.text = (itemPosition + 1).toString()
 		holder.titleTextView.text = item.feedItem.title
 
 		when
@@ -110,6 +119,7 @@ class FeedRecyclerViewAdapter : RecyclerView.Adapter<FeedRecyclerViewAdapter.Vie
 
 	inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView)
 	{
+		val numberTextView = itemView.number_text_view!!
 		val titleTextView = itemView.title_text_view!!
 		val subtitleTextView = itemView.subtitle_text_view!!
 		val iconImageView = itemView.icon_image_view!!

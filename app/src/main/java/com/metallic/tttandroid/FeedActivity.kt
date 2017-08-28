@@ -50,6 +50,13 @@ class FeedActivity: LifecycleAppCompatActivity()
 		setSupportActionBar(toolbar)
 		supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+		val feedId = intent.getLongExtra(EXTRA_FEED_ID, -1)
+
+		viewModel = ViewModelProviders.of(this)[FeedViewModel::class.java]
+		viewModel.initialize(feedId)
+
+		title = viewModel.feed.name
+
 		recyclerView = recycler_view
 		val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 		recyclerView.layoutManager = layoutManager
@@ -57,17 +64,11 @@ class FeedActivity: LifecycleAppCompatActivity()
 		recyclerView.addItemDecoration(dividerItemDecoration)
 
 		recyclerViewAdapter = FeedRecyclerViewAdapter()
+		recyclerViewAdapter.reverseOrder = viewModel.reverseListOrder
 		recyclerView.adapter = recyclerViewAdapter
 		recyclerViewAdapter.itemOnClickCallback = this::itemClicked
 		recyclerViewAdapter.itemOnLongClickCallback = this::itemLongClicked
 		recyclerViewAdapter.itemSelection = { item -> selectedItemTitles.contains(item.feedItem.title) }
-
-		val feedId = intent.getLongExtra(EXTRA_FEED_ID, -1)
-
-		viewModel = ViewModelProviders.of(this)[FeedViewModel::class.java]
-		viewModel.initialize(feedId)
-
-		title = viewModel.feed.name
 
 		swipeRefreshLayout = swipe_refresh_layout
 		swipeRefreshLayout.isRefreshing = viewModel.isRefreshing
@@ -145,6 +146,7 @@ class FeedActivity: LifecycleAppCompatActivity()
 
 		override fun onPrepareActionMode(actionMode: ActionMode, menu: Menu) = false
 
+		@RequiresApi(Build.VERSION_CODES.M)
 		override fun onActionItemClicked(actionMode: ActionMode, menuItem: MenuItem): Boolean
 		{
 			when(menuItem.itemId)
@@ -276,6 +278,12 @@ class FeedActivity: LifecycleAppCompatActivity()
 						.create()
 						.show()
 				return true
+			}
+
+			R.id.action_reverse_order ->
+			{
+				viewModel.reverseListOrder = !viewModel.reverseListOrder
+				recyclerViewAdapter.reverseOrder = viewModel.reverseListOrder
 			}
 		}
 		return super.onOptionsItemSelected(item)
