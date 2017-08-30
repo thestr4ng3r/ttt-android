@@ -9,6 +9,10 @@ android:
     - add-on
     - extra
 
+before_install:
+  - openssl aes-256-cbc -K $encrypted_e5b50b8dd3ec_key -iv $encrypted_e5b50b8dd3ec_iv -in keystore.tar.enc -out keystore.tar -d
+  - tar -xvf keystore.tar
+
 script:
   - ./gradlew assembleRelease
-  - ls -lh app/build/outputs/apk/release/app-release-unsigned.apk
+  - ls -lh app/build/outputs/apk/release/app-release.apk
