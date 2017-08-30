@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import com.metallic.tttandroid.adapter.FeedListRecyclerViewAdapter
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
@@ -47,5 +49,25 @@ class MainActivity : LifecycleAppCompatActivity()
 			recyclerViewAdapter.items = items
 			empty_text_view.visibility = if(items?.isEmpty() ?: true) View.VISIBLE else View.GONE
 		})
+	}
+
+	override fun onCreateOptionsMenu(menu: Menu): Boolean
+	{
+		menuInflater.inflate(R.menu.activity_main_toolbar, menu)
+		return true
+	}
+
+	override fun onOptionsItemSelected(item: MenuItem): Boolean
+	{
+		when(item.itemId)
+		{
+			R.id.action_about ->
+			{
+				val intent = Intent(this, AboutActivity::class.java)
+				startActivity(intent)
+			}
+		}
+
+		return super.onOptionsItemSelected(item)
 	}
 }
