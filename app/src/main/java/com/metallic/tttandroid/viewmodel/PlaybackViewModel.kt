@@ -7,7 +7,10 @@ import android.arch.lifecycle.MutableLiveData
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.AsyncTask
 import com.metallic.tttandroid.model.AppDatabase
+import com.metallic.tttandroid.model.FeedItem
+import com.metallic.tttandroid.model.FeedItemIdentifier
 import com.metallic.tttandroid.model.FeedItemWithDownload
 import com.metallic.tttandroid.ttt.RecordingGraphicsLiveData
 import com.metallic.tttandroid.ttt.core.Index
@@ -17,11 +20,11 @@ import java.io.File
 
 class PlaybackViewModel(application: Application): AndroidViewModel(application), Index.Listener
 {
-	private var _feedItem: FeedItemWithDownload? = null
-	val feedItem: FeedItemWithDownload get() = _feedItem!!
+	var feedItem: FeedItemWithDownload? = null
+		private set
 
-	private var _audioPlayer: MediaPlayer? = null
-	val audioPlayer: MediaPlayer get() = _audioPlayer!!
+	var audioPlayer: MediaPlayer? = null
+		private set
 
 	lateinit var tttFile: File private set
 
@@ -33,39 +36,94 @@ class PlaybackViewModel(application: Application): AndroidViewModel(application)
 
 	lateinit var graphicsLiveData: RecordingGraphicsLiveData
 
-	fun initialize(feedId: Long, feedItemTitle: String): Boolean
+	private var initializeAsyncTask: InitializeAsyncTask? = null
+	private var initializedCallbacks = mutableSetOf<((success: Boolean) -> Unit)>()
+	fun removeInitializedCallback(callback: ((success: Boolean) -> Unit)) = initializedCallbacks.remove(callback)
+
+	/**
+	 * Load recording asynchronously and start playback. Must be called on the main thread.
+	 */
+	fun initialize(feedItemIdentifier: FeedItemIdentifier, callback: ((success: Boolean) -> Unit))
 	{
-		if(_feedItem != null)
-			return true
+		initializedCallbacks.add(callback)
 
-		val context = getApplication<Application>()
+		// already initialized?
+		if(recording != null)
+		{
+			initializationFinished(true)
+			return
+		}
 
-		val db = AppDatabase.getInstance(getApplication())
+		// currently initializing?
+		if(initializeAsyncTask != null)
+			return
 
-		_feedItem = db.feedItemDao().getSingleWithDownloads(feedId, feedItemTitle) ?: return false
-		val lectureDir = feedItem.lectureDir ?: return false
+		val initAsyncTask = InitializeAsyncTask()
+		this.initializeAsyncTask = initAsyncTask
+		initAsyncTask.execute(feedItemIdentifier)
+	}
 
-		val lectureDirUri = Uri.fromFile(File(lectureDir))
-		val audioUri = lectureDirUri.buildUpon().appendPath(feedItem.feedItem.title + ".mp3").build()
-		val tttUri = lectureDirUri.buildUpon().appendPath(feedItem.feedItem.title + ".ttt").build()
+	private fun initializationFinished(success: Boolean)
+	{
+		for(callback in initializedCallbacks)
+			callback(success)
+		initializedCallbacks.clear()
+	}
 
-		_audioPlayer = MediaPlayer.create(context, audioUri) ?: return false
-		tttFile = File(tttUri.path)
+	private inner class InitializeAsyncTask: AsyncTask<FeedItemIdentifier, Unit, Recording>()
+	{
+		override fun doInBackground(vararg params: FeedItemIdentifier): Recording?
+		{
+			val context = getApplication<Application>()
 
-		recording = Recording(tttFile, audioPlayer, feedItem.lastPlaybackPosition)
-		_currentIndex.value = recording!!.index.currentIndex
-		recording!!.index.setListener(this)
-		graphicsLiveData = RecordingGraphicsLiveData(recording!!.graphicsContext)
-		recording!!.play()
+			val db = AppDatabase.getInstance(getApplication())
 
-		return true
+			val feedItemIdentifier = params[0]
+			val feedItem = db.feedItemDao().getSingleWithDownloads(feedItemIdentifier.feedId, feedItemIdentifier.feedItemTitle) ?: return null
+			val lectureDir = feedItem.lectureDir ?: return null
+
+			val lectureDirUri = Uri.fromFile(File(lectureDir))
+			val audioUri = lectureDirUri.buildUpon().appendPath(feedItem.feedItem.title + ".mp3").build()
+			val tttUri = lectureDirUri.buildUpon().appendPath(feedItem.feedItem.title + ".ttt").build()
+
+			audioPlayer = MediaPlayer.create(context, audioUri) ?: return null
+			tttFile = File(tttUri.path)
+
+			val recording = Recording(tttFile, audioPlayer, feedItem.lastPlaybackPosition)
+
+			return recording
+		}
+
+		override fun onPostExecute(recording: Recording?)
+		{
+			initializeAsyncTask = null
+
+			if(isCancelled)
+				return
+
+			if(recording == null)
+			{
+				initializationFinished(false)
+				return
+			}
+
+			_currentIndex.value = recording.index.currentIndex
+			recording.index.setListener(this@PlaybackViewModel)
+			graphicsLiveData = RecordingGraphicsLiveData(recording.graphicsContext)
+			recording.play()
+
+			this@PlaybackViewModel.recording = recording
+
+			initializationFinished(true)
+		}
 	}
 
 	override fun onCleared()
 	{
 		super.onCleared()
+		initializeAsyncTask?.cancel(true)
 		recording?.close()
-		_audioPlayer?.release()
+		audioPlayer?.release()
 	}
 
 	override fun currentIndexChanged(index: Int)
@@ -76,6 +134,7 @@ class PlaybackViewModel(application: Application): AndroidViewModel(application)
 	fun saveCurrentPlaybackPosition()
 	{
 		val time = recording?.time ?: return
-		AppDatabase.getInstance(getApplication()).feedItemDownloadDao().setLastPlaybackPosition(feedItem.feedItem.link, time)
+		val link = feedItem?.feedItem?.link ?: return
+		AppDatabase.getInstance(getApplication()).feedItemDownloadDao().setLastPlaybackPosition(link, time)
 	}
 }

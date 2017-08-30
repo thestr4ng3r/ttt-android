@@ -1,11 +1,8 @@
 package com.metallic.tttandroid
 
-import android.animation.LayoutTransition
 import android.app.AlertDialog
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.DialogInterface
-import android.opengl.Visibility
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.widget.DividerItemDecoration
@@ -17,7 +14,7 @@ import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
 import com.metallic.tttandroid.adapter.IndexRecyclerViewAdapter
-import com.metallic.tttandroid.model.AppDatabase
+import com.metallic.tttandroid.model.FeedItemIdentifier
 import com.metallic.tttandroid.ttt.core.Recording
 import com.metallic.tttandroid.utils.LifecycleAppCompatActivity
 import com.metallic.tttandroid.utils.logError
@@ -66,30 +63,13 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 		val feedItemTitle = intent.getStringExtra(EXTRA_FEED_ITEM_TITLE)
 
 		viewModel = ViewModelProviders.of(this)[PlaybackViewModel::class.java]
-		if(!viewModel.initialize(feedId, feedItemTitle))
-		{
-			logError("Failed to initialize Playback")
-			AlertDialog.Builder(this)
-					.setMessage(R.string.alert_message_playback_failed)
-					.setPositiveButton(R.string.alert_message_playback_failed_dismiss, { _, _ ->
-						finish()
-					})
-					.create()
-					.show()
-			return
-		}
 
 		imageView = playback_image_view
 
-		viewModel.graphicsLiveData.observe(this, Observer { bitmap ->
-			imageView.setImageBitmap(bitmap)
-			imageView.invalidate()
-		})
-
 		playbackControlsView = playback_controls_view
+		animatePlaybackControls(false)
 
 		seekBar = progress_seek_bar
-		seekBar.max = viewModel.recording!!.duration
 		seekBar.setOnSeekBarChangeListener(seekBarListener)
 
 		playButton = play_button
@@ -99,17 +79,9 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 		durationTextView = duration_text_view
 
 		updateHandler = Handler()
-		viewModel.recording!!.addListener(this)
-
-		updatePlayButton(viewModel.recording?.isPlaying)
-		updatePositionTextView(viewModel.recording?.time)
-		updateDurationTextView(viewModel.recording?.duration)
 
 		imageView.setOnClickListener { animatePlaybackControls() }
 		playbackControlsView.setOnClickListener { animatePlaybackControls(true) }
-
-		animatePlaybackControls(true)
-
 
 		indexRecyclerView = index_recycler_view
 		val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -118,7 +90,6 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 		indexRecyclerView.addItemDecoration(dividerItemDecoration)
 
 		indexRecyclerViewAdapter = IndexRecyclerViewAdapter()
-		indexRecyclerViewAdapter.recording = viewModel.recording
 		indexRecyclerView.adapter = indexRecyclerViewAdapter
 		indexRecyclerViewAdapter.itemOnClickCallback = { indexEntry ->
 			viewModel.recording?.setTime(indexEntry.timestamp, true)
@@ -130,6 +101,42 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 		skip_next_button.setOnClickListener { viewModel.recording?.next() }
 
 		viewModel.currentIndex.observe(this, Observer { currentIndex -> indexRecyclerViewAdapter.currentIndex = currentIndex })
+
+		viewModel.initialize(FeedItemIdentifier(feedId, feedItemTitle), initializedCallback)
+	}
+
+	private val initializedCallback: ((Boolean) -> Unit) = { success ->
+		progress_bar.visibility = View.GONE
+
+		if(!success)
+		{
+			logError("Failed to initialize Playback")
+			AlertDialog.Builder(this)
+					.setMessage(R.string.alert_message_playback_failed)
+					.setPositiveButton(R.string.alert_message_playback_failed_dismiss, { _, _ ->
+						finish()
+					})
+					.create()
+					.show()
+		}
+		else
+		{
+			seekBar.max = viewModel.recording!!.duration
+			viewModel.recording!!.addListener(this)
+
+			viewModel.graphicsLiveData.observe(this, Observer { bitmap ->
+				imageView.setImageBitmap(bitmap)
+				imageView.invalidate()
+			})
+
+			updatePlayButton(viewModel.recording?.isPlaying)
+			updatePositionTextView(viewModel.recording?.time)
+			updateDurationTextView(viewModel.recording?.duration)
+
+			animatePlaybackControls(true)
+
+			indexRecyclerViewAdapter.recording = viewModel.recording
+		}
 	}
 
 	override fun onResume()
@@ -150,6 +157,11 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 
 	private fun animatePlaybackControls(show: Boolean = !playbackControlsDisplayed)
 	{
+		var show = show
+
+		if(viewModel.recording == null)
+			show = false
+
 		playbackControlsView.visibility = if(show) View.VISIBLE else View.GONE
 		playbackControlsDisplayed = show
 
@@ -182,6 +194,7 @@ class PlaybackActivity: LifecycleAppCompatActivity(), Recording.Listener
 	override fun onDestroy()
 	{
 		super.onDestroy()
+		viewModel.removeInitializedCallback(initializedCallback)
 		viewModel.recording?.removeListener(this)
 		schedulePlaybackControlsHiding(true)
 	}
