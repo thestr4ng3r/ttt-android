@@ -8,3 +8,6 @@
 /captures
 .externalNativeBuild
 *.swp
+*.jks
+keystore.properties
+keystore.tar
