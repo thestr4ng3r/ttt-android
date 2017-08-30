@@ -1,18 +1,26 @@
 language: android
 android:
   components:
-    - tools
-    - platform-tools
-    - tools
-    - build-tools-26.0.1
-    - android-26
-    - add-on
-    - extra
+  - tools
+  - platform-tools
+  - tools
+  - build-tools-26.0.1
+  - android-26
+  - add-on
+  - extra
 
 before_install:
-  - openssl aes-256-cbc -K $encrypted_e5b50b8dd3ec_key -iv $encrypted_e5b50b8dd3ec_iv -in keystore.tar.enc -out keystore.tar -d
-  - tar -xvf keystore.tar
+- openssl aes-256-cbc -K $encrypted_e5b50b8dd3ec_key -iv $encrypted_e5b50b8dd3ec_iv -in keystore.tar.enc -out keystore.tar -d
+- tar -xvf keystore.tar
 
 script:
-  - ./gradlew assembleRelease
-  - ls -lh app/build/outputs/apk/release/app-release.apk
+- "./gradlew assembleRelease"
+- cp app/build/outputs/apk/release/app-release.apk ttt-android.apk
+
+deploy:
+  provider: releases
+  api_key:
+    secure: aRDUVonqsJ+Fj2yu7TbvxYfjXboiQMS+EktXJ0/pIXdI3sWCulhSRNhiP28r6WEEzeMj0b9N9exg4rO4D/5wvAiUxevizm9mPKRhOL9A/OxetZehZJhrZnwkWHexoUWvQ+ngKwcgVa3uASSbVas0iGifzrPUFQ+wZBx86YDIb8Q0R0gUIV0bz0ZOGEuBm+NoMEeULTxT4P3YuNA9neUuCIpDC3U/7GlUmZDI701IK5DkJTKOcOoWJUyck13Vie6BoNKxmPS76qVCx+M1DHBKmdOtPCG0p1Sqik9Yjr68jUtyvFTQhtoKA8rhGU34QTqRhkT/oVOXFC4CQ9T1oy5wLYv6YisC+orhxBGzE3ICLurI+v9LnOUrB8awp6yNm6u+gZnVp3+WEcCUhYZ/PGtvFRY6mxjY+GK74FjUa8pZIgJmvIn+8EVWEOn7vBZfUiV1Rq/wI6IZoo80GHDqm15IJ5UQZdESw8IaZGC8Vt9NHRPh8e7TqH7BLiA6X6XLzxqipH/eKnkUF7HfKJUKU3Ie3q+jtv7k95mU4eoRNW6NBol9DSF88fbQaDfXlOJKAZIcKrqdW7j3cSWEhEUIUMoExMuc4m15+QBWBd6wSR0ijptjkRJjjw4iwdRGyijT/JAtJ/aGrET6aHalFIFbJjuyiANx6bGLmAWlTDo7rO3jczA=
+  file: ttt-android.apk
+  on:
+    tags: true
