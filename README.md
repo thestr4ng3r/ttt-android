@@ -1,6 +1,8 @@
 
 # TTT Android Client
 
+[![Build Status](https://travis-ci.org/thestr4ng3r/ttt-android.svg?branch=travis)](https://travis-ci.org/thestr4ng3r/ttt-android)
+
 This is an Android client to play recordings created with the [TeleTeachingTool](http://ttt.in.tum.de/), which is being developed at the Technical University of Munich.
 
 It is an almost complete re-write of the [original Android client by Thomas Krex](https://versioncontrolseidl.in.tum.de/petter/tttandroidclient), following its basic structure, but with the following differences:
@@ -30,3 +32,4 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
