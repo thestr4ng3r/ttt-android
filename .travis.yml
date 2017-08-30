@@ -1,0 +1,14 @@
+language: android
+android:
+  components:
+    - tools
+    - platform-tools
+    - tools
+    - build-tools-26.0.1
+    - android-26
+    - add-on
+    - extra
+
+script:
+  - ./gradlew assembleRelease
+  - ls -lh app/build/outputs/apk/release/app-release-unsigned.apk
