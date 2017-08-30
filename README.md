@@ -13,8 +13,8 @@ It is an almost complete re-write of the [original Android client by Thomas Krex
 * Separating TTT logic from UI
 * Downloads in the background using Android's DownloadManager
 
-![Feed Screenshot](raw/screenshot_feed.jpg)
-![Playback Screenshot](raw/screenshot_playback.jpg)
+![Feed Screenshot](assets/screenshot_feed.jpg)
+![Playback Screenshot](assets/screenshot_playback.jpg)
 
 ## About
 Created by Florian Märkl: https://www.metallic.software  
