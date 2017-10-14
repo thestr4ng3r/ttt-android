@@ -1,7 +1,7 @@
 
 # TTT Android Client
 
-[![Build Status](https://travis-ci.org/thestr4ng3r/ttt-android.svg?branch=travis)](https://travis-ci.org/thestr4ng3r/ttt-android)
+[![Build Status](https://travis-ci.org/thestr4ng3r/ttt-android.svg?branch=master)](https://travis-ci.org/thestr4ng3r/ttt-android)
 
 This is an Android client to play recordings created with the [TeleTeachingTool](http://ttt.in.tum.de/), which is being developed at the Technical University of Munich.
 
